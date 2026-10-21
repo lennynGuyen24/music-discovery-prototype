@@ -338,3 +338,15 @@ p { margin: 0; }
   animation: toast-in 240ms cubic-bezier(.2,.8,.2,1);
 }
 @keyframes toast-in { from { transform: translateY(16px); opacity: 0; } }
+
+/* ---------- Real phone (kept last so it overrides the mock-device rules) ---------- */
+@media (max-width: 500px) {
+  /* On a real phone the OS draws its own status bar and home indicator: drop the mock
+     chrome and pad for the notch / home bar instead. */
+  .status-bar { height: max(12px, env(safe-area-inset-top)); }
+  .status-bar > * { display: none; }
+  .home-indicator { display: none !important; }
+  .content { padding-bottom: max(24px, calc(env(safe-area-inset-bottom) + 16px)); }
+  .bottom-nav { height: auto; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+  .toast { bottom: calc(96px + env(safe-area-inset-bottom)); }
+}
