@@ -2,7 +2,7 @@
 
 > Feed it a place, a photo or a feeling. Get music back.
 
-**[▶ View live demo](https://YOUR-USERNAME.github.io/YOUR-REPO/)** · [Figma prototype](https://www.figma.com/design/YwpMkcu2rX5vWzcZVbzWOz/Rapid-Prototype) · [Design → Dev process](docs/PROCESS.md)
+**[▶ View live demo](https://lennynguyen24.github.io/music-discovery-prototype/)** · [Figma prototype](https://www.figma.com/design/YwpMkcu2rX5vWzcZVbzWOz/Rapid-Prototype) · [Design → Dev process](docs/PROCESS.md)
 
 A coded, real-behavior prototype for a music-discovery app, built for **UXDG 390**. The Figma prototype shows the flow. This version lets people *feel* it: real audio previews, real input, real transitions, and states that change as you use it.
 
@@ -12,7 +12,7 @@ A coded, real-behavior prototype for a music-discovery app, built for **UXDG 390
 
 ## Try it
 
-Open the [live demo](https://YOUR-USERNAME.github.io/YOUR-REPO/). It runs full-screen on a phone and inside a phone frame on desktop.
+Open the [live demo](https://lennynguyen24.github.io/music-discovery-prototype/). It runs full-screen on a phone and inside a phone frame on desktop.
 
 1. **Welcome → Plug in your music.** Toggle the streaming services you use.
 2. **Home → Start a Node.** A *Node* is one "vibe search."
