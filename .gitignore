@@ -1,0 +1,9 @@
+node_modules/
+dist/
+.env*
+.DS_Store
+Thumbs.db
+
+# Local tooling and personal notes
+.claude/
+FULL-STACK.txt
