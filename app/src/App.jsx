@@ -32,6 +32,7 @@ function Shell() {
   const [connected, setConnected] = useState(['Spotify']);
   const [vibes, setVibes] = useState([]);
   const [node, setNode] = useState(null);
+  const [permissions, setPermissions] = useState({}); // { mic: true } once the explainer was accepted
   const [mailbox, setMailbox] = useState(INITIAL_MAILBOX);
   const [toastMsg, setToastMsg] = useState(null); // { message, action? }
   const toastTimer = useRef(null);
@@ -102,6 +103,8 @@ function Shell() {
             vibes={vibes}
             setVibes={setVibes}
             node={node}
+            permissions={permissions}
+            allowDevice={(kind) => setPermissions((p) => ({ ...p, [kind]: true }))}
             startNode={setNode}
             mailbox={mailbox}
             newInMailbox={newInMailbox}

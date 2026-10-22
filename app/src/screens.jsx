@@ -479,7 +479,22 @@ export function Profile({ go, toast, connected, vibes }) {
 /* ---------- 05 Node · Scanning ---------- */
 const SCAN_MS = 4200;
 
-export function Scanning({ go, back, node }) {
+// Shown before the browser's own mic/camera prompt, so people know why it's asked.
+const DEVICE_ASK = {
+  mic: {
+    icon: iconMic, left: 4, top: 1, title: 'Let the Node listen?', allow: 'Allow microphone',
+    body: 'It listens for a few seconds — to you humming, describing a vibe, or the room around you. Nothing is recorded or saved.',
+  },
+  camera: {
+    icon: iconCamera, left: 2, top: 2, title: 'Let the Node look around?', allow: 'Allow camera',
+    body: 'It looks through your camera for a few seconds to read the place you’re in. No photos are saved.',
+  },
+};
+
+export function Scanning({ go, back, node, permissions, allowDevice }) {
+  const ask = DEVICE_ASK[node?.mode];
+  // 'ask' → explainer; 'device' → real mic/camera; 'simulate' → no device ("Not now")
+  const [stage, setStage] = useState(ask && !permissions[node.mode] ? 'ask' : ask ? 'device' : 'simulate');
   const videoRef = useRef(null);
   const [level, setLevel] = useState(Array(9).fill(4));
   const [revealed, setRevealed] = useState(0);
@@ -490,8 +505,9 @@ export function Scanning({ go, back, node }) {
   const { pause } = usePlayer();
   useEffect(() => { if (listening) pause(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Real camera / microphone input
+  // Real camera / microphone input (only after the explainer said yes)
   useEffect(() => {
+    if (stage !== 'device') return;
     let stream, raf, audioCtx, cancelled = false;
     (async () => {
       try {
@@ -524,14 +540,34 @@ export function Scanning({ go, back, node }) {
       stream?.getTracks().forEach((t) => t.stop());
       audioCtx?.close();
     };
-  }, [node]);
+  }, [node, stage]);
 
   // Reveal detected tags one by one, then move to results
   useEffect(() => {
+    if (stage === 'ask') return;
     const timers = tags.map((_, i) => setTimeout(() => setRevealed(i + 1), 1300 + i * 700));
     timers.push(setTimeout(() => go('results'), SCAN_MS));
     return () => timers.forEach(clearTimeout);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [stage]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  if (stage === 'ask') {
+    return (
+      <>
+        <Glow src={glowScan1} left={-40} top={300} size={480} />
+        <TopBar title={labels.bar} onBack={back} />
+        <div className="content gap-16 permission">
+          <div className="spacer" />
+          <span className="permission-icon"><Icon src={ask.icon} left={ask.left} top={ask.top} /></span>
+          <h1 className="t-title" style={{ margin: 0 }}>{ask.title}</h1>
+          <p className="t-body muted">{ask.body}</p>
+          <p className="t-body muted">Your browser will ask next. You can turn it off any time in its settings.</p>
+          <div className="spacer" />
+          <Button onClick={() => { allowDevice(node.mode); setStage('device'); }}>{ask.allow}</Button>
+          <Button variant="secondary" onClick={() => { setNote(`Not using the ${node.mode === 'mic' ? 'mic' : 'camera'} — simulating it`); setStage('simulate'); }}>Not now</Button>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
