@@ -11,6 +11,9 @@ const SCREENS = {
   results: Results,
 };
 
+// Bottom-nav destinations. Switching tabs starts a fresh stack instead of pushing.
+const TABS = ['home', 'community', 'remote', 'profile'];
+
 export default function App() {
   const [stack, setStack] = useState(['welcome']);
   const [direction, setDirection] = useState('forward');
@@ -41,6 +44,12 @@ export default function App() {
     setToastMsg(msg);
     toastTimer.current = setTimeout(() => setToastMsg(''), 2600);
   }, []);
+  const tab = useCallback((id) => {
+    if (id === screen) return;
+    if (!SCREENS[id]) return toast(`${id[0].toUpperCase() + id.slice(1)} isn’t in this prototype yet.`);
+    setDirection('tab');
+    setStack([id]);
+  }, [screen, toast]);
 
   const Screen = SCREENS[screen];
 
@@ -53,6 +62,7 @@ export default function App() {
             go={go}
             back={back}
             home={home}
+            tab={tab}
             toast={toast}
             connected={connected}
             setConnected={setConnected}
@@ -61,7 +71,7 @@ export default function App() {
             mailbox={mailbox}
             dropInMailbox={() => setMailbox((m) => m + 1)}
           />
-          {screen !== 'home' && <HomeIndicator />}
+          {!TABS.includes(screen) && <HomeIndicator />}
         </div>
         <Toast message={toastMsg} />
       </main>

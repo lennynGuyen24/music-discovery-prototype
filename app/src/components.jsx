@@ -106,12 +106,13 @@ export function SongRow({ title, artist, playing, progress, onToggle }) {
 }
 
 const NAV = [
-  { id: 'home', label: 'Home', src: navHome, left: 1.75, top: 1.75 },
-  { id: 'community', label: 'Community', src: navCommunity, left: 0.833, top: 2.667 },
-  { id: 'remote', label: 'Remote', src: navRemote, left: 2.667, top: 2.667 },
-  { id: 'profile', label: 'Profile', src: navProfile, left: 2.667, top: 2.667 },
+  { id: 'home', label: 'Home', src: navHome, left: 1.75, top: 1.75, w: 18.5, h: 18.5 },
+  { id: 'community', label: 'Community', src: navCommunity, left: 0.833, top: 2.667, w: 20.333, h: 17.583 },
+  { id: 'remote', label: 'Remote', src: navRemote, left: 2.667, top: 2.667, w: 16.667, h: 16.667 },
+  { id: 'profile', label: 'Profile', src: navProfile, left: 2.667, top: 2.667, w: 16.667, h: 17.583 },
 ];
 
+// Icons are drawn as masks so they take the label's color (muted, or white when active).
 export function BottomNav({ active, onSelect }) {
   return (
     <nav className="bottom-nav">
@@ -120,7 +121,9 @@ export function BottomNav({ active, onSelect }) {
           className={`nav-item${active === item.id ? ' active' : ''}`}
           aria-current={active === item.id ? 'page' : undefined}
           onClick={() => onSelect(item.id)}>
-          <span className="icon"><Icon src={item.src} left={item.left} top={item.top} /></span>
+          <span className="icon">
+            <i style={{ left: item.left, top: item.top, width: item.w, height: item.h, WebkitMaskImage: `url(${item.src})`, maskImage: `url(${item.src})` }} />
+          </span>
           <span className="t-caption">{item.label}</span>
         </button>
       ))}

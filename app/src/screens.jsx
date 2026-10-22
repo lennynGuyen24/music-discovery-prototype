@@ -95,7 +95,7 @@ export function ConnectApps({ go, connected, setConnected }) {
 }
 
 /* ---------- 03 Home ---------- */
-export function Home({ go, mailbox, toast }) {
+export function Home({ go, tab, mailbox, toast }) {
   const now = new Date();
   const day = now.toLocaleDateString('en-US', { weekday: 'long' });
   const h = now.getHours();
@@ -129,7 +129,7 @@ export function Home({ go, mailbox, toast }) {
           </span>
         </button>
       </div>
-      <BottomNav active="home" onSelect={(id) => id !== 'home' && toast(`${id[0].toUpperCase() + id.slice(1)} isn’t in this prototype yet.`)} />
+      <BottomNav active="home" onSelect={tab} />
     </>
   );
 }
