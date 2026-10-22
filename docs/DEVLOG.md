@@ -25,6 +25,23 @@ One entry per working session, newest first. Keep each entry short: what changed
 
 ---
 
+## 2026-10-21: Mid-fi color pass on Lan's screens (Figma)
+
+**Done**
+- Duplicated the "Lan" section on "Claude's food" as **"Lan · Mid-fi"**, placed directly below it. The lo-fi original is untouched
+- Re-skinned 01b Plug in, 02 Home, 03 Community, 04 Now Playing and 05 Profile from grey lo-fi to the dark palette. Every flat color is bound to a `Tokens` variable (ink, navy, card, border, text, accent)
+- Added mid-fi detail: blue/magenta corner glows, a gradient daily-prompt card and persona recap, Scan as the hero input tile, a colored globe with magenta pins, the match-card deck, colored record spines, gradient snippet covers and avatars, a "Connected ✓" state on Spotify, and the correct active tab in the bottom nav on each screen
+
+**Decisions**
+- The two "???" Home tiles became dashed, faded "SOON" tiles, matching the app's "coming soon" treatment
+- Gradients use the token hex values (blue `#1f5cff` → magenta `#c42bd6`) because Figma can't bind variables to gradient stops
+
+**Next**
+- Review "Lan · Mid-fi" with the team, then port the changes to the app screens
+- Tidy the Community match deck (the cards overlap inside a container card)
+
+---
+
 ## 2026-10-21: Curated screens from the sitemap (v0.2-curated)
 
 **Done**
