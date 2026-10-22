@@ -18,6 +18,14 @@ export function Glow({ src, left, top, size }) {
   );
 }
 
+// A blurred circle in a token color; `blur` is the Figma layer-blur radius (CSS uses half).
+export function Blob({ color, left, top, size, opacity = 0.5, blur = 120 }) {
+  return (
+    <div className="blob" aria-hidden="true"
+      style={{ left, top, width: size, height: size, opacity, background: `var(--color-accent-${color})`, filter: `blur(${blur / 2}px)` }} />
+  );
+}
+
 export function StatusBar() {
   return (
     <div className="status-bar" aria-hidden="true">
@@ -67,12 +75,13 @@ export function TopBar({ title, onBack }) {
   );
 }
 
-export function Chip({ children, filled, pop, style }) {
-  return (
-    <span className={`chip t-caption${filled ? ' filled' : ''}${pop ? ' pop' : ''}`} style={style}>
-      {children}
-    </span>
-  );
+// Figma "Chip" (State=Default/Selected). Pass onClick to make it a toggle button.
+export function Chip({ children, filled, pop, style, onClick }) {
+  const className = `chip t-caption${filled ? ' filled' : ''}${pop ? ' pop' : ''}`;
+  if (onClick) {
+    return <button type="button" className={className} style={style} aria-pressed={!!filled} onClick={onClick}>{children}</button>;
+  }
+  return <span className={className} style={style}>{children}</span>;
 }
 
 export function SongRow({ title, artist, playing, progress, onToggle }) {

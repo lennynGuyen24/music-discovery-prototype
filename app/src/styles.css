@@ -1,6 +1,7 @@
 /* Design tokens — mirror the "Tokens" variable collection in the Rapid Prototype Figma file. */
 :root {
   --color-bg-ink: #050824;
+  --color-bg-navy: #0b1452;
   --color-surface-card: #121c66;
   --color-border-subtle: #2b3a8c;
   --color-text-primary: #ffffff;
@@ -10,13 +11,15 @@
   --color-accent-blue: #1f5cff;
   --color-accent-magenta: #c42bd6;
 
+  --space-4: 4px;
   --space-8: 8px;
   --space-12: 12px;
   --space-16: 16px;
   --space-20: 20px;
   --space-24: 24px;
+  --space-32: 32px;
 
-  --radius-md: 16px;
+  --radius-md: 12px;
   --radius-lg: 24px;
   --radius-full: 999px;
 
@@ -89,6 +92,8 @@ p { margin: 0; }
 
 .glow { position: absolute; pointer-events: none; z-index: 0; }
 .glow img { display: block; width: 100%; height: 100%; }
+/* Blurred token-colored circle: the curated screens' "Glow" ellipses (Figma layer blur ≈ 2× CSS blur). */
+.blob { position: absolute; pointer-events: none; z-index: 0; border-radius: 50%; }
 .screen > :is(.status-bar, .top-bar, .content, .bottom-nav) { position: relative; z-index: 1; }
 
 .content {
@@ -163,12 +168,15 @@ p { margin: 0; }
 /* ---------- Chips ---------- */
 .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
-  padding: 8px 12px;
+  padding: var(--space-8) var(--space-16);
   border-radius: var(--radius-full);
-  border: 1px solid var(--color-text-muted);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
   white-space: nowrap;
+  transition: background 160ms ease, color 160ms ease;
 }
-.chip.filled { background: var(--color-accent-sun); color: var(--color-text-on-light); border-color: transparent; }
+button.chip:active { transform: scale(0.96); }
+.chip.filled { background: var(--color-accent-sun); color: var(--color-text-on-light); border-color: var(--color-accent-sun); }
 .chip.pop { animation: pop 360ms cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
 
