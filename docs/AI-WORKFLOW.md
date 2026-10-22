@@ -38,7 +38,8 @@ Keep this list growing. These prompts are the most useful evidence of process.
 | Tokens | "Read the Tokens variables in [Figma link] and generate CSS custom properties." | `:root` tokens in `styles.css` |
 | Screen | "Implement the Results frame [link] using our components and tokens." | `Results` in `screens.jsx` |
 | Real audio | "Make the play buttons play real 15s previews without using licensed tracks." | `audio.js` (Web Audio synthesis) |
-| TODO | | |
+| Curated screens | "I updated this page with the sitemap: [link]. Build each section a frame (onboarding, homepage, community, remote control, profile)." | Five curated frames plus Chip / List Row / Knob / Stat components, built from the existing tokens |
+| Plan first | "Propose a plan to update the React prototype to match the five new curated Figma screens." | A one-commit-per-screen plan with open questions, answered before any code changed |
 
 ## Guardrails
 

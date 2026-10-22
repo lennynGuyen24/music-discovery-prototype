@@ -67,6 +67,24 @@ I rebuilt each Figma frame as a React screen, pulling exact values from Figma th
 
 **Intentionally out of scope:** real streaming APIs, camera/mic analysis, accounts, a backend.
 
+### 5b. Curated iteration (v0.2-curated)
+
+After the team voted on a moodboard and I reworked the sitemap, I designed one curated screen per top-level sitemap section. Then I rebuilt the app to match.
+
+| # | Screen | Sitemap items covered |
+|---|---|---|
+| 01a–c | Onboarding | Welcome, Connect music apps, **Pick your vibes** (new step that seeds the first daily prompt) |
+| 02 | Home | Daily prompt, the Node (scan / voice / media / words), catalogue snippets, record drop-off mailbox |
+| 03 | Community | Map (global radio), user matching, touch tips (RFID charm), Q&A |
+| 04 | Remote Control | Filter, labeling music, sample finder ("advanced shazam"), stickers on records |
+| 05 | Profile | Persona recap, stats, listening room, connect apps, settings |
+
+**Design decisions**
+- **Moodboard → system, not one-offs.** The horizon arc, glows, stickered record and hardware knobs from the voted images are built on the existing tokens, so the new look still comes from one source of truth.
+- **One tap into the Node.** The Node card's four tiles replace the separate "Choose input" screen, which saves a step on the core flow.
+- **Onboarding you can come back to.** Connect apps and Pick your vibes double as Profile editors: they return to Profile with "Done"/"Save" instead of continuing onboarding.
+- **Nothing is a dead end.** Map pins, snippets, the record and shelf spines play previews. Features that aren't built yet show a toast.
+
 ## 6. Shipping the live demo
 
 - Code lives on GitHub; every push to `main` runs [`deploy.yml`](../.github/workflows/deploy.yml), which builds the app and publishes it to GitHub Pages

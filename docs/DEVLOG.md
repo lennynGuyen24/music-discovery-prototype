@@ -4,6 +4,28 @@ One entry per working session, newest first. Keep each entry short: what changed
 
 ---
 
+## 2026-10-21: Curated screens from the sitemap (v0.2-curated)
+
+**Done**
+- In Figma, on the "Claude's food" page, built one 402×874 screen for each top-level sitemap section: Onboarding, Home, Community, Remote Control, Profile. Each covers that section's sitemap items
+- Added a three-step onboarding (Welcome → Connect apps → new **Pick your vibes**) and local components: Chip, List Row, Knob, Stat
+- Marked the replaced frames on the Node flow page "(old)"
+- Rebuilt the app to match: three-step onboarding, a new Home, and working Community, Remote and Profile tabs (one commit each)
+
+**Decisions**
+- Styling comes from the voted moodboard: horizon arc, magenta/blue glows, a stickered record, hardware knobs. It all stays on the existing `Tokens` variables and text styles
+- Home's Node tiles open each input directly, so the separate "Choose input" screen is gone
+- The tabs reset the stack; onboarding screens reopened from Profile return to Profile
+- Glows are now blurred CSS circles in token colors instead of exported SVGs
+- Every tap does something: previews play (map pins, snippets, the record, shelf spines), and everything not built yet shows a toast
+
+**Next**
+- Review with the team; log feedback in [PROCESS.md § 7](PROCESS.md#7-testing--feedback)
+- Add a Bottom Nav "Active" variant in Figma instead of per-instance color overrides
+- Push and check the live demo (`/ship`)
+
+---
+
 ## 2026-10-21: Coded prototype + live demo setup
 
 **Done**

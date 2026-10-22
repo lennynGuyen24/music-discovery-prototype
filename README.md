@@ -14,11 +14,12 @@ A coded, real-behavior prototype for a music-discovery app, built for **UXDG 390
 
 Open the [live demo](https://lennynguyen24.github.io/music-discovery-prototype/). It runs full-screen on a phone and inside a phone frame on desktop.
 
-1. **Welcome → Plug in your music.** Toggle the streaming services you use.
-2. **Home → Start a Node.** A *Node* is one "vibe search."
-3. **Feed the Node.** Pick Scan, Voice memo, Words or Photos. Try **Words** and type something like *rainy rooftop, missing someone*.
-4. **Scanning.** The app reads your input and pulls out mood tags.
-5. **Results.** Tap play. Each track plays a 15-second preview generated live in the browser. Save the Node, or drop it in your crew's mailbox.
+1. **Onboarding.** Welcome → plug in your streaming apps → pick at least three vibes.
+2. **Home → feed the Node.** A *Node* is one "vibe search." Tap Scan, Voice, Media or Words. Try **Words** and type something like *rainy rooftop, missing someone*.
+3. **Scanning → Results.** The app pulls mood tags from your input. Tap play: each track plays a 15-second preview generated live in the browser. Save the Node, or drop it in your crew's mailbox.
+4. **Community.** Tap a city on the global radio map to tune in.
+5. **Remote.** Tap the record to spin it, switch filters, and drag the Energy / Mood / Tempo knobs.
+6. **Profile.** Tap a record spine in your listening room; edit your apps or vibes.
 
 ## What's real vs. faked
 
@@ -27,7 +28,8 @@ Open the [live demo](https://lennynguyen24.github.io/music-discovery-prototype/)
 | Screen navigation with a back stack and directional transitions | Streaming-service connections (toggles only) |
 | Text input that turns into the Node's tags and title | Camera, mic and photo analysis (simulated scan) |
 | Audio playback with progress, synthesized via the Web Audio API | Song recommendations (fixed list) |
-| Toasts, a bottom sheet, disabled/enabled button states, a mailbox counter | Community, Remote and Profile tabs |
+| Toasts, a bottom sheet, disabled/enabled button states, a mailbox counter | Messaging, Q&A threads, stickers, sample finder (toasts) |
+| Tab navigation, previews on the map, record and shelf, draggable knobs | Profile stats and persona recap (fixed data) |
 
 The audio is synthesized, so the prototype needs no licensed tracks.
 
@@ -39,7 +41,7 @@ Research (FigJam)  →  IA + moodboard  →  Figma tokens & components  →  Fig
 
 - **Research & ideation:** FigJam board with moodboard, feature prioritization and sitemap.
 - **Design system:** Figma variables (color, spacing, radius), text styles and a component set. These became CSS custom properties in [`app/src/styles.css`](app/src/styles.css).
-- **Figma prototype:** 6 wired screens: Welcome → Connect → Home → Choose input → Scanning → Results.
+- **Figma prototype:** the Node flow (Welcome → Connect → Home → Choose input → Scanning → Results), then one curated screen per sitemap section (Onboarding, Home, Community, Remote Control, Profile).
 - **Coded prototype:** each Figma frame was rebuilt as a React screen using the Figma MCP plus Claude Code.
 
 The full write-up, with decisions and lessons, is in **[docs/PROCESS.md](docs/PROCESS.md)**. How I worked with AI is in **[docs/AI-WORKFLOW.md](docs/AI-WORKFLOW.md)**.
