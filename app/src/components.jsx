@@ -68,14 +68,22 @@ export function StatusBar() {
   );
 }
 
-// Figma "List Row": leading dot, title, trailing meta. A button when it has onClick.
-export function ListRow({ title, meta, dot = 'magenta', metaOn, onClick, ...props }) {
+// Marks a feature that isn't built yet, so it reads as "coming soon" before anyone taps it.
+export function Soon() {
+  return <span className="soon-badge t-caption">Soon</span>;
+}
+
+// Figma "List Row": leading dot, title (+ optional line under it), trailing meta. A button when it has onClick.
+export function ListRow({ title, sub, meta, dot = 'magenta', metaOn, soon, onClick, ...props }) {
   const Tag = onClick ? 'button' : 'div';
   return (
-    <Tag type={onClick ? 'button' : undefined} className="list-row" onClick={onClick} {...props}>
+    <Tag type={onClick ? 'button' : undefined} className={`list-row${soon ? ' soon' : ''}`} onClick={onClick} {...props}>
       <span className="dot" style={{ background: dot === 'subtle' ? 'var(--color-border-subtle)' : `var(--color-accent-${dot})` }} />
-      <span className="title t-body-strong">{title}</span>
-      {meta && <span className={`t-caption${metaOn ? '' : ' muted'}`}>{meta}</span>}
+      <span className="title">
+        <span className="t-body-strong">{title}</span>
+        {sub && <span className="t-body muted sub">{sub}</span>}
+      </span>
+      {soon ? <Soon /> : meta && <span className={`t-caption${metaOn ? '' : ' muted'}`}>{meta}</span>}
     </Tag>
   );
 }
@@ -131,10 +139,10 @@ export function HomeIndicator() {
   return <div className="home-indicator" aria-hidden="true"><span /></div>;
 }
 
-export function Button({ variant = 'primary', children, ...props }) {
+export function Button({ variant = 'primary', soon, children, ...props }) {
   return (
-    <button type="button" className={`btn btn-${variant}`} {...props}>
-      {children}
+    <button type="button" className={`btn btn-${variant}${soon ? ' soon' : ''}`} {...props}>
+      {children}{soon && <span className="sr-only"> (coming soon)</span>}
     </button>
   );
 }
@@ -152,8 +160,11 @@ export function TopBar({ title, onBack }) {
 
 // Figma "Chip" (State=Default/Selected). Pass onClick to make it a toggle button.
 // variant="tag" is an outlined label you add to a track (selected shows a check).
-export function Chip({ children, filled, pop, style, onClick, variant }) {
-  const className = `chip t-caption${variant ? ` ${variant}` : ''}${filled ? ' filled' : ''}${pop ? ' pop' : ''}`;
+export function Chip({ children, filled, pop, style, onClick, variant, soon }) {
+  const className = `chip t-caption${variant ? ` ${variant}` : ''}${filled ? ' filled' : ''}${pop ? ' pop' : ''}${soon ? ' soon' : ''}`;
+  if (soon) {
+    return <button type="button" className={className} style={style} onClick={onClick}>{children}<span className="sr-only"> (coming soon)</span></button>;
+  }
   if (onClick) {
     return <button type="button" className={className} style={style} aria-pressed={!!filled} onClick={onClick}>{children}</button>;
   }

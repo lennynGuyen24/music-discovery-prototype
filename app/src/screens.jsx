@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Artwork, Blob, Button, Chip, Glow, Icon, InboxIcon, Knob, ListRow, Progress, Segmented, Sheet, SongRow, TopBar, WordsSheet } from './components.jsx';
+import { Artwork, Blob, Button, Chip, Glow, Icon, InboxIcon, Knob, ListRow, Progress, Segmented, Sheet, Soon, SongRow, TopBar, WordsSheet } from './components.jsx';
 import { CREWS, DECK, detectedWords, inputLabels, matchSet, rankTracks, resultTitle, SHELF, SNIPPETS, STATIONS, TAG_OPTIONS, whyLine } from './data.js';
 import { usePlayer, useProgress } from './player.jsx';
 
@@ -34,7 +34,7 @@ export function Welcome({ go, toast }) {
         <p className="t-body muted full">Turn a place, a photo, a feeling or a few words into music you haven’t heard yet.</p>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Button onClick={() => go('connect')}>Get started</Button>
-          <Button variant="secondary" onClick={() => toast('Sign-in isn’t in this prototype yet.')}>I already have an account</Button>
+          <Button variant="secondary" soon onClick={() => toast('Sign-in isn’t in this prototype yet.')}>I already have an account</Button>
         </div>
       </div>
     </>
@@ -233,9 +233,12 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
           </div>
           <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={onFile} />
         </div>
-        <button type="button" className="card prompt-card"
+        <button type="button" className="card prompt-card soon"
           onClick={() => toast('Answering prompts isn’t in this prototype yet.')}>
-          <p className="t-caption" style={{ color: 'var(--color-accent-magenta)' }}>Today’s prompt · Studio Crew</p>
+          <span className="card-head">
+            <span className="t-caption" style={{ color: 'var(--color-accent-magenta)' }}>Today’s prompt · Studio Crew</span>
+            <Soon />
+          </span>
           <p className="t-body-strong">“A song for a 2AM drive with the windows down”</p>
           <span className="answers">
             <span className="faces" aria-hidden="true"><i /><i /><i /></span>
@@ -244,7 +247,7 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
         </button>
         <div className="section-head full">
           <p className="t-caption muted">Picked for you</p>
-          <button type="button" className="t-caption" onClick={() => toast('The full catalogue opens in a later version.')}>See all</button>
+          <button type="button" className="t-caption link soon" onClick={() => toast('The full catalogue opens in a later version.')}>See all<span className="sr-only"> (coming soon)</span></button>
         </div>
         <div className="shelf">
           {SNIPPETS.map((sn) => (
@@ -326,16 +329,16 @@ export function Community({ toast }) {
           </div>
           <p className="t-body muted">You both loop Jai Paul and late-night jazz after 1AM.</p>
           <div className="chip-row">
-            <Chip filled onClick={() => toast('Messaging isn’t in this prototype yet.')}>Say hi</Chip>
-            <Chip onClick={() => toast('Record swaps open in a later version.')}>Swap a record</Chip>
+            <Chip soon onClick={() => toast('Messaging isn’t in this prototype yet.')}>Say hi</Chip>
+            <Chip soon onClick={() => toast('Record swaps open in a later version.')}>Swap a record</Chip>
           </div>
         </section>
-        <ListRow title="Touch tips" meta="Tap a charm" dot="sun"
+        <ListRow title="Touch tips" sub="Tap your RFID phone charm to a friend’s phone to swap a song." dot="sun" soon
           onClick={() => toast('Touch tips need the RFID phone charm — coming with the hardware.')} />
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p className="t-caption muted">Q&amp;A</p>
           {[['Rainy-commute albums?', '18'], ['Underrated samples?', '42']].map(([q, n]) => (
-            <ListRow key={q} title={q} meta={n} dot="blue" onClick={() => toast('Q&A threads aren’t in this prototype yet.')} />
+            <ListRow key={q} title={q} sub={`${n} replies`} dot="blue" soon onClick={() => toast('Q&A threads aren’t in this prototype yet.')} />
           ))}
         </div>
       </div>
@@ -400,18 +403,18 @@ export function Remote({ toast }) {
             {['Late night', 'Driving'].map((l) => (
               <Chip key={l} variant="tag" filled={labels.includes(l)} onClick={() => toggleLabel(l)}>{labels.includes(l) ? `✓ ${l}` : l}</Chip>
             ))}
-            <Chip variant="tag" onClick={() => toast('Custom labels arrive in a later version.')}>+ Add</Chip>
+            <Chip variant="tag" soon onClick={() => toast('Custom labels arrive in a later version.')}>+ Add</Chip>
           </div>
         </div>
         <div className="tools full">
           <button type="button" className="card panel navy tool" style={{ borderColor: 'color-mix(in srgb, var(--color-accent-magenta) 60%, transparent)' }}
             onClick={() => toast('Sample finder is coming — it will show what this track is built on.')}>
-            <span className="t-body-strong">Sample finder</span>
+            <span className="card-head"><span className="t-body-strong">Sample finder</span><Soon /></span>
             <span className="t-body muted">Hear what this track is built on →</span>
           </button>
           <button type="button" className="card panel navy tool" style={{ borderColor: 'color-mix(in srgb, var(--color-accent-sun) 60%, transparent)' }}
             onClick={() => toast('Friends’ stickers open in a later version.')}>
-            <span className="t-body-strong">Stickers</span>
+            <span className="card-head"><span className="t-body-strong">Stickers</span><Soon /></span>
             <span className="t-body muted">3 left on this record by friends →</span>
           </button>
         </div>
@@ -451,7 +454,7 @@ export function Profile({ go, toast, connected, vibes }) {
         <section className="card panel navy">
           <div className="section-head">
             <p className="t-title">Listening room</p>
-            <button type="button" className="t-caption muted" onClick={() => toast('Arranging your room arrives with the 3D room in a later version.')}>Edit</button>
+            <button type="button" className="t-caption link soon" onClick={() => toast('Arranging your room arrives with the 3D room in a later version.')}>Edit<span className="sr-only"> (coming soon)</span></button>
           </div>
           <div className="room-shelf">
             {SHELF.map((tr, i) => (
@@ -466,7 +469,7 @@ export function Profile({ go, toast, connected, vibes }) {
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <ListRow title="Connect music apps" meta={`${connected.length} linked`} dot="blue" onClick={() => go('connect')} />
           <ListRow title="Your vibes" meta={`${vibes.length} picked`} dot="magenta" onClick={() => go('vibes')} />
-          <ListRow title="Settings" meta="→" dot="subtle" onClick={() => toast('Settings aren’t in this prototype yet.')} />
+          <ListRow title="Settings" dot="subtle" soon onClick={() => toast('Settings aren’t in this prototype yet.')} />
         </div>
       </div>
     </>
