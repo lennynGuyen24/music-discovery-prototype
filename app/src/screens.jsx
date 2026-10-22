@@ -305,15 +305,9 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
   const day = now.toLocaleDateString('en-US', { weekday: 'long' });
   const h = now.getHours();
   const greeting = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-  const player = usePlayer();
   const [sheet, setSheet] = useState(false);
   const [inbox, setInbox] = useState(false);
-  const [catalogOut, setCatalogOut] = useState(null);
   const fileRef = useRef(null);
-  const fileBack = () => {
-    if (player.isPlaying(catalogOut.id)) player.pause();
-    setCatalogOut(null);
-  };
 
   // Each Node tile goes straight into its input: camera/mic scan, media opens the picker, words opens a sheet.
   const pick = (id) => {
@@ -375,18 +369,11 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
             <span className="t-meta muted">6 of 9 answered · Add yours →</span>
           </span>
         </button>
-        <div className="section-head full">
-          <p className="t-caption muted">Picked for you</p>
-          <button type="button" className="t-caption link soon" onClick={() => toast('The full catalogue opens in a later version.')}>See all<span className="sr-only"> (coming soon)</span></button>
-        </div>
-        <CatalogDrawer items={SNIPPETS} from="Picked for you" out={catalogOut} onLift={setCatalogOut} />
         <ListRow title={newInMailbox ? `${newInMailbox} new records in your mailbox` : 'Your group mailbox'}
           meta={newInMailbox ? 'New' : 'Open'} metaOn={newInMailbox > 0} onClick={() => setInbox(true)} />
       </div>
       {sheet && <WordsSheet onSubmit={submitWords} onClose={() => setSheet(false)} />}
       {inbox && <MailboxSheet mailbox={mailbox} markRead={markRead} onClose={() => setInbox(false)} />}
-      {catalogOut && <CatalogCard track={catalogOut} number={SNIPPETS.indexOf(catalogOut) + 1} onClose={fileBack}
-        onSave={() => toast('Saving to a playlist isn’t in this prototype yet.')} />}
     </>
   );
 }
@@ -478,6 +465,11 @@ export function Remote({ toast }) {
   const choose = (f) => player.load(DECK[f], `Remote · ${f}`, player.playing);
   const toggleLabel = (l) => setLabels((ls) => (ls.includes(l) ? ls.filter((x) => x !== l) : [...ls, l]));
   const TONE = [['energy', 'Energy'], ['mood', 'Mood'], ['tempo', 'Tempo']];
+  const [catalogOut, setCatalogOut] = useState(null);
+  const fileBack = () => {
+    if (player.isPlaying(catalogOut.id)) player.pause();
+    setCatalogOut(null);
+  };
 
   return (
     <>
@@ -538,7 +530,14 @@ export function Remote({ toast }) {
             <span className="t-body muted">3 left on this record by friends →</span>
           </button>
         </div>
+        <div className="section-head full">
+          <p className="t-caption muted">Similar songs</p>
+          <button type="button" className="t-caption link soon" onClick={() => toast('The full catalogue opens in a later version.')}>See all<span className="sr-only"> (coming soon)</span></button>
+        </div>
+        <CatalogDrawer items={SNIPPETS} from="Similar songs" out={catalogOut} onLift={setCatalogOut} />
       </div>
+      {catalogOut && <CatalogCard track={catalogOut} number={SNIPPETS.indexOf(catalogOut) + 1} onClose={fileBack}
+        onSave={() => toast('Saving to a playlist isn’t in this prototype yet.')} />}
     </>
   );
 }
