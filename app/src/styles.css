@@ -174,6 +174,15 @@ p { margin: 0; }
 }
 .back-btn img { width: 7px; height: 12px; display: block; }
 
+/* ---------- 44×44 hit areas (the visible shape can stay smaller) ---------- */
+.back-btn, button.chip, .pin, .tag-chip > button, .link { position: relative; }
+.back-btn::after { content: ''; position: absolute; inset: -2px -12px; }
+button.chip::after { content: ''; position: absolute; inset: -6px 0; }
+.pin::before { content: ''; position: absolute; inset: -11px; border-radius: 50%; }
+.tag-chip > button::after { content: ''; position: absolute; inset: -7px 0; }
+.tag-chip > button.x::after { inset: -7px -10px; }
+.link { display: inline-block; padding: 15px 8px; margin: -15px -8px; }
+
 /* ---------- Chips ---------- */
 .chip-row { display: flex; gap: 8px; flex-wrap: wrap; }
 .chip {
@@ -376,7 +385,8 @@ button.list-row:active { transform: scale(0.98); }
   border: 1px solid var(--color-border-subtle);
 }
 /* Record spines stand on a shelf edge; the playing one slides out. */
-.room-shelf { display: flex; align-items: flex-end; gap: 3px; height: 62px; border-bottom: 3px solid var(--color-border-subtle); }
+/* The whole shelf is one big target: spines are too thin to tap one by one. */
+.room-shelf { width: 100%; display: flex; align-items: flex-end; gap: 3px; height: 62px; border-bottom: 3px solid var(--color-border-subtle); }
 .spine { flex: none; border-radius: 2px 2px 0 0; transition: transform 200ms ease; }
 .spine.out { transform: translateY(-10px); }
 
@@ -388,7 +398,7 @@ button.list-row:active { transform: scale(0.98); }
   background: var(--color-bg-ink);
   border-top: 1px solid var(--color-border-subtle);
 }
-.nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; color: var(--color-text-muted); }
+.nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; min-width: 64px; min-height: 48px; color: var(--color-text-muted); }
 .nav-item.active { color: var(--color-text-primary); }
 .nav-item .icon { position: relative; width: 22px; height: 22px; }
 .nav-item .icon i { position: absolute; display: block; background: currentColor; -webkit-mask-size: 100% 100%; mask-size: 100% 100%; }
@@ -466,7 +476,7 @@ button.list-row:active { transform: scale(0.98); }
   background: var(--color-bg-navy); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
 }
-.menu button { padding: var(--space-12); text-align: left; border-radius: 8px; font: 600 15px/1.2 var(--font-body); }
+.menu button { min-height: 44px; padding: var(--space-12); text-align: left; border-radius: 8px; font: 600 15px/1.2 var(--font-body); }
 .menu button:hover, .menu button:focus-visible { background: var(--color-surface-card); }
 /* Result tags: the label swaps, × removes; removed tags come back as a dashed "+ Tempo". */
 .tag-chip { display: inline-flex; align-items: center; border-radius: var(--radius-full); background: var(--color-surface-card); border: 1px solid var(--color-border-subtle); }
@@ -501,7 +511,7 @@ button.list-row:active { transform: scale(0.98); }
   background: var(--color-bg-navy); border: 1px solid var(--color-border-subtle);
   overflow: hidden;
 }
-.mini-main { flex: 1 0 0; min-width: 0; display: flex; align-items: center; gap: var(--space-12); text-align: left; }
+.mini-main { flex: 1 0 0; min-width: 0; min-height: 44px; display: flex; align-items: center; gap: var(--space-12); text-align: left; }
 .mini-main .art { border-radius: 8px; }
 .mini-text { min-width: 0; display: flex; flex-direction: column; white-space: nowrap; }
 .mini-text > span { overflow: hidden; text-overflow: ellipsis; }

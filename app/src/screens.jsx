@@ -429,6 +429,8 @@ const spineColor = (c) => (c === 'card' ? 'var(--color-surface-card)' : c === 's
 
 export function Profile({ go, toast, connected, vibes }) {
   const player = usePlayer();
+  const shelfTrack = SHELF.some((tr) => tr.id === player.track?.id) && player.source === 'Listening room';
+  const shelfPlaying = shelfTrack && player.playing;
   return (
     <>
       <Blob color="magenta" left={100} top={-160} size={420} opacity={0.45} blur={140} />
@@ -456,14 +458,15 @@ export function Profile({ go, toast, connected, vibes }) {
             <p className="t-title">Listening room</p>
             <button type="button" className="t-caption link soon" onClick={() => toast('Arranging your room arrives with the 3D room in a later version.')}>Edit<span className="sr-only"> (coming soon)</span></button>
           </div>
-          <div className="room-shelf">
+          {/* One target for the whole shelf; the record that's playing slides out. */}
+          <button type="button" className="room-shelf" aria-pressed={shelfPlaying}
+            aria-label={shelfPlaying ? 'Pause your listening room' : `Play your listening room (${SHELF.length} records)`}
+            onClick={() => (shelfTrack ? player.toggle() : player.play(SHELF[0], SHELF, 'Listening room'))}>
             {SHELF.map((tr, i) => (
-              <button key={tr.id} type="button" className={`spine${player.isPlaying(tr.id) ? ' out' : ''}`}
-                aria-label={`${player.isPlaying(tr.id) ? 'Pause' : 'Play'} ${tr.title} by ${tr.artist}`}
-                style={{ width: i % 3 === 0 ? 12 : 8, height: 46 + ((i * 7) % 14), background: spineColor(SPINES[i % SPINES.length]) }}
-                onClick={() => player.play(tr, SHELF, 'Listening room')} />
+              <span key={tr.id} aria-hidden="true" className={`spine${player.isPlaying(tr.id) ? ' out' : ''}`}
+                style={{ width: i % 3 === 0 ? 12 : 8, height: 46 + ((i * 7) % 14), background: spineColor(SPINES[i % SPINES.length]) }} />
             ))}
-          </div>
+          </button>
           <p className="t-meta muted">The record on the table plays whatever you’re on right now.</p>
         </section>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
