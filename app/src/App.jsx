@@ -1,13 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HomeIndicator, StatusBar, Toast } from './components.jsx';
-import { ChooseInput, ConnectApps, Home, PickVibes, Results, Scanning, Welcome } from './screens.jsx';
+import { ConnectApps, Home, PickVibes, Results, Scanning, Welcome } from './screens.jsx';
 
 const SCREENS = {
   welcome: Welcome,
   connect: ConnectApps,
   vibes: PickVibes,
   home: Home,
-  input: ChooseInput,
   scanning: Scanning,
   results: Results,
 };
@@ -30,7 +29,7 @@ export default function App() {
 
   const go = useCallback((id) => {
     setDirection('forward');
-    // Scanning is a transient step: Results' back button returns to the input picker.
+    // Scanning is a transient step: Results' back button returns to where the Node started.
     setStack((s) => [...s.filter((x) => x !== 'scanning'), id]);
   }, []);
   const back = useCallback(() => {

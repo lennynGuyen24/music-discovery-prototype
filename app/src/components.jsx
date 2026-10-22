@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from 'react';
+import { playPreview } from './audio.js';
 import backIcon from './assets/back.svg';
 import playIcon from './assets/play.svg';
 import navHome from './assets/nav-home.svg';
@@ -157,4 +159,19 @@ export function BottomNav({ active, onSelect }) {
 export function Toast({ message }) {
   if (!message) return null;
   return <div className="toast" role="status">{message}</div>;
+}
+
+// One preview at a time per screen; stops when the screen unmounts.
+export function usePreview() {
+  const [playing, setPlaying] = useState(null);
+  const stopRef = useRef(null);
+  useEffect(() => () => stopRef.current?.(), []);
+  const toggle = (id, soundIndex) => {
+    stopRef.current?.();
+    stopRef.current = null;
+    if (playing === id) return setPlaying(null);
+    setPlaying(id);
+    stopRef.current = playPreview(soundIndex, () => setPlaying(null));
+  };
+  return { playing, toggle };
 }

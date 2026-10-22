@@ -1,12 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Blob, BottomNav, Button, Chip, Glow, Icon, ListRow, Progress, SongRow, TopBar } from './components.jsx';
+import { Blob, BottomNav, Button, Chip, Glow, Icon, ListRow, Progress, SongRow, TopBar, usePreview } from './components.jsx';
 import { playPreview, PREVIEW_SECONDS } from './audio.js';
 
-import glowHome1 from './assets/glow-home-1.svg';
-import glowHome2 from './assets/glow-home-2.svg';
-import recordImg from './assets/record.svg';
-import glowInput1 from './assets/glow-input-1.svg';
-import glowInput2 from './assets/glow-input-2.svg';
 import iconCamera from './assets/icon-camera.svg';
 import iconMic from './assets/icon-mic.svg';
 import iconType from './assets/icon-type.svg';
@@ -129,73 +124,45 @@ export function PickVibes({ tab, vibes, setVibes }) {
   );
 }
 
-/* ---------- 03 Home ---------- */
-export function Home({ go, tab, mailbox, toast }) {
+/* ---------- 02 Home (curated) ---------- */
+const NODE_INPUTS = [
+  { id: 'camera', label: 'Scan', icon: iconCamera, left: 2, top: 2 },
+  { id: 'mic', label: 'Voice', icon: iconMic, left: 4, top: 1 },
+  { id: 'media', label: 'Media', icon: iconImage, left: 2, top: 2 },
+  { id: 'words', label: 'Words', icon: iconType, left: 3, top: 4 },
+];
+
+const SNIPPETS = [
+  { title: 'Night Swim', artist: 'Ravyn Lenae', from: 'blue', to: 'magenta' },
+  { title: 'Glass Hour', artist: 'Mk.gee', from: 'magenta', to: 'sun' },
+  { title: 'Low Sun', artist: 'Bonobo', from: 'navy', to: 'blue' },
+  { title: 'Overcast', artist: 'Tirzah', from: 'sun', to: 'blue' },
+];
+const tokenColor = (name) => (name === 'navy' ? 'var(--color-bg-navy)' : `var(--color-accent-${name})`);
+
+export function Home({ go, tab, mailbox, toast, startNode }) {
   const now = new Date();
   const day = now.toLocaleDateString('en-US', { weekday: 'long' });
   const h = now.getHours();
   const greeting = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-
-  return (
-    <>
-      <Glow src={glowHome1} left={-180} top={-160} size={560} />
-      <Glow src={glowHome2} left={200} top={-60} size={360} />
-      <div className="content gap-20" style={{ paddingBottom: 24 }}>
-        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <p className="t-caption muted">{day} · {greeting}, Lan</p>
-          <h1 className="t-display-l" style={{ margin: 0 }}>What’s your vibe?</h1>
-        </div>
-        <div className="node-card full">
-          <p className="t-caption">The Node</p>
-          <p className="t-title">Feed it a place, a photo or a feeling. Get music back.</p>
-          <Button onClick={() => go('input')}>Start a Node</Button>
-        </div>
-        <button type="button" className="card prompt-card"
-          onClick={() => toast('Community prompts aren’t in this prototype yet.')}>
-          <p className="t-caption muted">Today’s prompt · Studio Crew</p>
-          <p className="t-body-strong">“A song for a 2AM drive with the windows down”</p>
-          <p className="t-body muted">6 of 9 friends answered →</p>
-        </button>
-        <button type="button" className="card mailbox"
-          onClick={() => toast(`${mailbox} records waiting — the mailbox opens in a later version.`)}>
-          <img src={recordImg} alt="" />
-          <span className="t-body-strong" style={{ flex: '1 0 0' }}>
-            {mailbox} records dropped in your mailbox
-          </span>
-        </button>
-      </div>
-      <BottomNav active="home" onSelect={tab} />
-    </>
-  );
-}
-
-/* ---------- 04 Node · Choose input ---------- */
-const OPTIONS = [
-  { id: 'camera', title: 'Scan', desc: 'Point your camera at a place, a landmark or your wall', icon: iconCamera, left: 2, top: 2 },
-  { id: 'mic', title: 'Voice memo', desc: 'Hum it, describe it, or record the room', icon: iconMic, left: 4, top: 1 },
-  { id: 'words', title: 'Words', desc: 'Type a feeling: “rainy rooftop, missing someone”', icon: iconType, left: 3, top: 4 },
-  { id: 'media', title: 'Photos & videos', desc: 'Pull from your camera roll', icon: iconImage, left: 2, top: 2 },
-];
-
-export function ChooseInput({ go, back, startNode }) {
+  const preview = usePreview();
   const [sheet, setSheet] = useState(false);
   const [words, setWords] = useState('');
   const fileRef = useRef(null);
 
+  // Each Node tile goes straight into its input: camera/mic scan, media opens the picker, words opens a sheet.
   const pick = (id) => {
     if (id === 'words') return setSheet(true);
     if (id === 'media') return fileRef.current.click();
     startNode({ mode: id });
     go('scanning');
   };
-
   const onFile = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
     startNode({ mode: 'media', url: URL.createObjectURL(file), isVideo: file.type.startsWith('video') });
     go('scanning');
   };
-
   const submitWords = () => {
     if (!words.trim()) return;
     startNode({ mode: 'words', text: words.trim() });
@@ -204,23 +171,56 @@ export function ChooseInput({ go, back, startNode }) {
 
   return (
     <>
-      <Glow src={glowInput1} left={140} top={-180} size={480} />
-      <Glow src={glowInput2} left={-220} top={-100} size={500} />
-      <TopBar title="Node" onBack={back} />
-      <div className="content gap-12">
-        <h1 className="t-display-l full" style={{ margin: 0 }}>Feed the Node</h1>
-        <p className="t-body muted full">Pick how you want to describe your vibe.</p>
-        {OPTIONS.map((o) => (
-          <button key={o.id} type="button" className="card input-option" onClick={() => pick(o.id)}>
-            <span className="icon"><span><Icon src={o.icon} left={o.left} top={o.top} /></span></span>
-            <span className="text">
-              <span className="t-title" style={{ whiteSpace: 'nowrap' }}>{o.title}</span>
-              <span className="t-body muted">{o.desc}</span>
-            </span>
-          </button>
-        ))}
-        <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={onFile} />
+      <Blob color="magenta" left={140} top={-120} size={420} opacity={0.4} blur={140} />
+      <Blob color="blue" left={-160} top={120} size={380} opacity={0.45} blur={140} />
+      <div className="content gap-16" style={{ paddingBottom: 24 }}>
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <p className="t-caption muted">{day} · {greeting}, Lan</p>
+          <h1 className="t-display-l" style={{ margin: 0 }}>What’s your vibe?</h1>
+        </div>
+        <button type="button" className="card prompt-card"
+          onClick={() => toast('Answering prompts isn’t in this prototype yet.')}>
+          <p className="t-caption" style={{ color: 'var(--color-accent-magenta)' }}>Today’s prompt · Studio Crew</p>
+          <p className="t-title">“A song for a 2AM drive with the windows down”</p>
+          <span className="answers">
+            <span className="faces" aria-hidden="true"><i /><i /><i /></span>
+            <span className="t-caption muted">6 of 9 answered · Add yours →</span>
+          </span>
+        </button>
+        <div className="node-card full">
+          <p className="t-caption">The Node</p>
+          <p className="t-title">Feed it a place, a sound, a photo or a feeling.</p>
+          <div className="node-inputs">
+            {NODE_INPUTS.map((o) => (
+              <button key={o.id} type="button" className="node-input" onClick={() => pick(o.id)}>
+                <span className="icon"><Icon src={o.icon} left={o.left} top={o.top} /></span>
+                <span className="t-caption">{o.label}</span>
+              </button>
+            ))}
+          </div>
+          <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={onFile} />
+        </div>
+        <div className="section-head full">
+          <p className="t-caption muted">Catalogue · Snippets</p>
+          <button type="button" className="t-caption" onClick={() => toast('The full catalogue opens in a later version.')}>See all</button>
+        </div>
+        <div className="shelf">
+          {SNIPPETS.map((sn, i) => (
+            <button key={sn.title} type="button" className="snippet" aria-pressed={preview.playing === sn.title}
+              aria-label={`${preview.playing === sn.title ? 'Stop' : 'Play'} ${sn.title} by ${sn.artist}`}
+              onClick={() => preview.toggle(sn.title, i)}>
+              <span className="cover" style={{ backgroundImage: `linear-gradient(135deg, ${tokenColor(sn.from)}, ${tokenColor(sn.to)})` }}>
+                {preview.playing === sn.title && <span className="eq"><i /><i /><i /></span>}
+              </span>
+              <span className="t-body-strong">{sn.title}</span>
+              <span className="t-caption muted">{sn.artist}</span>
+            </button>
+          ))}
+        </div>
+        <ListRow title={`${mailbox} records in your mailbox`} meta="New" metaOn
+          onClick={() => toast(`${mailbox} records waiting — the mailbox opens in a later version.`)} />
       </div>
+      <BottomNav active="home" onSelect={tab} />
       {sheet && (
         <div className="scrim" onClick={() => setSheet(false)}>
           <div className="sheet" role="dialog" aria-label="Describe your vibe" onClick={(e) => e.stopPropagation()}>
