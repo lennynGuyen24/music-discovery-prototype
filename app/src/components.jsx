@@ -59,7 +59,7 @@ export function ListRow({ title, meta, dot = 'magenta', metaOn, onClick, ...prop
   const Tag = onClick ? 'button' : 'div';
   return (
     <Tag type={onClick ? 'button' : undefined} className="list-row" onClick={onClick} {...props}>
-      <span className="dot" style={{ background: `var(--color-accent-${dot})` }} />
+      <span className="dot" style={{ background: dot === 'subtle' ? 'var(--color-border-subtle)' : `var(--color-accent-${dot})` }} />
       <span className="title t-body-strong">{title}</span>
       {meta && <span className={`t-caption${metaOn ? '' : ' muted'}`}>{meta}</span>}
     </Tag>

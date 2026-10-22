@@ -49,7 +49,8 @@ const SERVICES = [
   { name: 'SoundCloud', dot: 'sun' },
 ];
 
-export function ConnectApps({ go, connected, setConnected }) {
+// From Profile (returnTo === 'profile') this edits connections and returns instead of continuing onboarding.
+export function ConnectApps({ go, back, returnTo, connected, setConnected }) {
   const [loading, setLoading] = useState(null);
 
   const toggle = (name) => {
@@ -68,10 +69,15 @@ export function ConnectApps({ go, connected, setConnected }) {
   return (
     <>
       <OnboardingBackdrop />
+      {returnTo && <TopBar title="Profile" onBack={back} />}
       <div className="content gap-16">
         <div className="spacer" />
-        <Progress step={2} total={3} />
-        <p className="t-caption muted">Step 2 of 3 · Onboarding</p>
+        {returnTo ? <p className="t-caption muted">Profile · Music apps</p> : (
+          <>
+            <Progress step={2} total={3} />
+            <p className="t-caption muted">Step 2 of 3 · Onboarding</p>
+          </>
+        )}
         <h1 className="t-display-xl full" style={{ margin: 0 }}>Plug in your sound</h1>
         <p className="t-body muted full">Connect the apps you already listen on. The Node learns your taste from them — nothing gets posted without asking.</p>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -85,10 +91,10 @@ export function ConnectApps({ go, connected, setConnected }) {
           })}
         </div>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Button onClick={() => go('vibes')} disabled={connected.length === 0}>
-            {connected.length === 0 ? 'Connect at least one app' : 'Continue'}
+          <Button onClick={() => (returnTo ? back() : go('vibes'))} disabled={connected.length === 0}>
+            {connected.length === 0 ? 'Connect at least one app' : returnTo ? 'Done' : 'Continue'}
           </Button>
-          <Button variant="secondary" onClick={() => go('vibes')}>Skip for now</Button>
+          {!returnTo && <Button variant="secondary" onClick={() => go('vibes')}>Skip for now</Button>}
         </div>
       </div>
     </>
@@ -98,23 +104,28 @@ export function ConnectApps({ go, connected, setConnected }) {
 const VIBES = ['Late night', 'Jazz samples', 'Driving', 'Bedroom pop', 'Rainy days', 'Club', 'Soul', 'Ambient', 'Hyperpop', 'Lo-fi', 'Afrobeats', 'City pop'];
 const MIN_VIBES = 3;
 
-export function PickVibes({ tab, vibes, setVibes }) {
+export function PickVibes({ tab, back, returnTo, vibes, setVibes }) {
   const toggle = (v) => setVibes((vs) => (vs.includes(v) ? vs.filter((x) => x !== v) : [...vs, v]));
   const ready = vibes.length >= MIN_VIBES;
   return (
     <>
       <OnboardingBackdrop />
+      {returnTo && <TopBar title="Profile" onBack={back} />}
       <div className="content gap-16">
         <div className="spacer" />
-        <Progress step={3} total={3} />
-        <p className="t-caption muted">Step 3 of 3 · Onboarding</p>
+        {returnTo ? <p className="t-caption muted">Profile · Your vibes</p> : (
+          <>
+            <Progress step={3} total={3} />
+            <p className="t-caption muted">Step 3 of 3 · Onboarding</p>
+          </>
+        )}
         <h1 className="t-display-xl full" style={{ margin: 0 }}>Pick your vibes</h1>
         <p className="t-body muted full">Choose a few. The Node uses them for your first daily prompt — change them any time in Profile.</p>
         <div className="vibes full">
           {VIBES.map((v) => <Chip key={v} filled={vibes.includes(v)} onClick={() => toggle(v)}>{v}</Chip>)}
         </div>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
-          <Button onClick={() => tab('home')} disabled={!ready}>Start listening</Button>
+          <Button onClick={() => (returnTo ? back() : tab('home'))} disabled={!ready}>{returnTo ? 'Save' : 'Start listening'}</Button>
           <p className="t-caption muted">
             {vibes.length} picked{ready ? '' : ` · pick at least ${MIN_VIBES}`}
           </p>
@@ -400,6 +411,60 @@ export function Remote({ tab, toast }) {
         </div>
       </div>
       <BottomNav active="remote" onSelect={tab} />
+    </>
+  );
+}
+
+/* ---------- 05 Profile (curated) ---------- */
+const SPINES = ['magenta', 'blue', 'sun', 'card', 'magenta', 'subtle', 'blue', 'sun', 'magenta', 'card', 'blue', 'sun', 'subtle', 'magenta', 'blue', 'sun'];
+const spineColor = (c) => (c === 'card' ? 'var(--color-surface-card)' : c === 'subtle' ? 'var(--color-border-subtle)' : `var(--color-accent-${c})`);
+
+export function Profile({ go, tab, toast, connected, vibes }) {
+  const preview = usePreview();
+  return (
+    <>
+      <Blob color="magenta" left={100} top={-160} size={420} opacity={0.45} blur={140} />
+      <Blob color="blue" left={-200} top={300} size={400} opacity={0.4} blur={140} />
+      <div className="content gap-16" style={{ paddingBottom: 24 }}>
+        <div className="identity full">
+          <span className="avatar" aria-hidden="true" />
+          <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <h1 className="t-title" style={{ margin: 0 }}>Lan Nguyen</h1>
+            <span className="t-caption muted">@lan · Studio crew</span>
+          </span>
+        </div>
+        <section className="card persona">
+          <p className="t-caption">Your persona · October recap</p>
+          <p className="t-display-l">The night driver</p>
+          <p className="t-body">Moody, synth-heavy, mostly after 11PM. Up 40% on jazz samples.</p>
+        </section>
+        <div className="stats full">
+          {[['214', 'Records'], ['38', 'Nodes'], ['12', 'Matches']].map(([v, l]) => (
+            <div key={l} className="stat"><span className="t-title">{v}</span><span className="t-caption muted">{l}</span></div>
+          ))}
+        </div>
+        <section className="card panel navy">
+          <div className="section-head">
+            <p className="t-title">Listening room</p>
+            <button type="button" className="t-caption muted" onClick={() => toast('Arranging your room arrives with the 3D room in a later version.')}>Edit</button>
+          </div>
+          <div className="room-shelf">
+            {SPINES.map((c, i) => (
+              <button key={i} type="button" className={`spine${preview.playing === i ? ' out' : ''}`}
+                aria-label={`${preview.playing === i ? 'Stop' : 'Play'} record ${i + 1} from your shelf`}
+                style={{ width: i % 3 === 0 ? 12 : 8, height: 46 + ((i * 7) % 14), background: spineColor(c) }}
+                onClick={() => preview.toggle(i, i)} />
+            ))}
+          </div>
+          <p className="t-caption muted">The record on the table plays whatever you’re on right now.</p>
+        </section>
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <ListRow title="Connect music apps" meta={`${connected.length} linked`} dot="blue" onClick={() => go('connect')} />
+          <ListRow title="Your vibes" meta={`${vibes.length} picked`} dot="magenta" onClick={() => go('vibes')} />
+          <ListRow title="Settings" meta="→" dot="subtle" onClick={() => toast('Settings aren’t in this prototype yet.')} />
+        </div>
+      </div>
+      <BottomNav active="profile" onSelect={tab} />
     </>
   );
 }

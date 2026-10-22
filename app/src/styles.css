@@ -312,6 +312,31 @@ button.list-row:active { transform: scale(0.98); }
 .tools { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); }
 .tool { gap: var(--space-4); }
 
+/* ---------- Profile ---------- */
+.identity { display: flex; align-items: center; gap: var(--space-16); }
+.avatar {
+  width: 56px; height: 56px; flex: none; border-radius: 50%;
+  background: linear-gradient(135deg, var(--color-accent-blue), var(--color-accent-magenta));
+  border: 2px solid var(--color-accent-sun);
+}
+.persona {
+  display: flex; flex-direction: column; gap: var(--space-8);
+  padding: var(--space-16);
+  background-image: linear-gradient(to right, var(--color-accent-magenta), var(--color-accent-blue));
+}
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-8); }
+.stat {
+  display: flex; flex-direction: column; gap: var(--space-4);
+  padding: var(--space-12);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-surface-card) 60%, transparent);
+  border: 1px solid var(--color-border-subtle);
+}
+/* Record spines stand on a shelf edge; the playing one slides out. */
+.room-shelf { display: flex; align-items: flex-end; gap: 3px; height: 62px; border-bottom: 3px solid var(--color-border-subtle); }
+.spine { flex: none; border-radius: 2px 2px 0 0; transition: transform 200ms ease; }
+.spine.out { transform: translateY(-10px); }
+
 /* ---------- Bottom nav (component 7:24) ---------- */
 .bottom-nav {
   height: 72px; flex: none;

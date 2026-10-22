@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HomeIndicator, StatusBar, Toast } from './components.jsx';
-import { Community, ConnectApps, Home, PickVibes, Remote, Results, Scanning, Welcome } from './screens.jsx';
+import { Community, ConnectApps, Home, PickVibes, Profile, Remote, Results, Scanning, Welcome } from './screens.jsx';
 
 const SCREENS = {
   welcome: Welcome,
@@ -9,6 +9,7 @@ const SCREENS = {
   home: Home,
   community: Community,
   remote: Remote,
+  profile: Profile,
   scanning: Scanning,
   results: Results,
 };
@@ -27,6 +28,8 @@ export default function App() {
   const toastTimer = useRef(null);
 
   const screen = stack[stack.length - 1];
+  // Set when an onboarding screen is reopened from a tab (Profile → Connect apps / Your vibes), so it returns there.
+  const returnTo = ['connect', 'vibes'].includes(screen) && TABS.includes(stack[stack.length - 2]) ? stack[stack.length - 2] : null;
   const scale = useFitScale();
 
   const go = useCallback((id) => {
@@ -66,6 +69,7 @@ export default function App() {
             back={back}
             home={home}
             tab={tab}
+            returnTo={returnTo}
             toast={toast}
             connected={connected}
             setConnected={setConnected}
