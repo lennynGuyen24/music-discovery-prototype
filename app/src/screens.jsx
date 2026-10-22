@@ -67,7 +67,7 @@ export function ConnectApps({ go, back, returnTo, connected, setConnected }) {
   return (
     <>
       <OnboardingBackdrop />
-      {returnTo && <TopBar title="Profile" onBack={back} />}
+      <TopBar title={returnTo ? 'Profile' : 'Welcome'} onBack={back} />
       <div className="content gap-16">
         <div className="spacer" />
         {returnTo ? <p className="t-caption muted">Profile · Music apps</p> : (
@@ -77,7 +77,7 @@ export function ConnectApps({ go, back, returnTo, connected, setConnected }) {
           </>
         )}
         <h1 className="t-display-xl full" style={{ margin: 0 }}>Plug in your sound</h1>
-        <p className="t-body muted full">Connect the apps you already listen on. The Node learns your taste from them — nothing gets posted without asking.</p>
+        <p className="t-body muted full">Connect the apps you already listen on. <strong className="t-body-strong" style={{ color: 'var(--color-text-primary)' }}>The Node</strong> — the part of the app that turns a place, a sound, a photo or a feeling into music — learns your taste from them. Nothing gets posted without asking.</p>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {SERVICES.map(({ name, dot }) => {
             const isOn = connected.includes(name);
@@ -89,17 +89,20 @@ export function ConnectApps({ go, back, returnTo, connected, setConnected }) {
           })}
         </div>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <Button onClick={() => (returnTo ? back() : go('vibes'))} disabled={connected.length === 0}>
-            {connected.length === 0 ? 'Connect at least one app' : returnTo ? 'Done' : 'Continue'}
+          <Button onClick={() => (returnTo ? back() : go('vibes'))} disabled={connected.length === 0 || !!loading}>
+            {loading ? `Connecting ${loading}…` : connected.length === 0 ? 'Connect at least one app' : returnTo ? 'Done' : 'Continue'}
           </Button>
-          {!returnTo && <Button variant="secondary" onClick={() => go('vibes')}>Skip for now</Button>}
+          {!returnTo && <Button variant="secondary" onClick={() => go('vibes')} disabled={!!loading}>Skip for now</Button>}
         </div>
       </div>
     </>
   );
 }
 
-const VIBES = ['Late night', 'Jazz samples', 'Driving', 'Bedroom pop', 'Rainy days', 'Club', 'Soul', 'Ambient', 'Hyperpop', 'Lo-fi', 'Afrobeats', 'City pop'];
+const VIBES = {
+  Moods: ['Late night', 'Rainy days', 'Driving', 'Club', 'Sunday morning'],
+  Genres: ['Soul', 'Afrobeats', 'City pop', 'Jazz samples', 'Bedroom pop', 'Ambient', 'Hyperpop', 'Lo-fi'],
+};
 const MIN_VIBES = 3;
 
 export function PickVibes({ tab, back, returnTo, vibes, setVibes }) {
@@ -108,7 +111,7 @@ export function PickVibes({ tab, back, returnTo, vibes, setVibes }) {
   return (
     <>
       <OnboardingBackdrop />
-      {returnTo && <TopBar title="Profile" onBack={back} />}
+      <TopBar title={returnTo ? 'Profile' : 'Music apps'} onBack={back} />
       <div className="content gap-16">
         <div className="spacer" />
         {returnTo ? <p className="t-caption muted">Profile · Your vibes</p> : (
@@ -118,14 +121,19 @@ export function PickVibes({ tab, back, returnTo, vibes, setVibes }) {
           </>
         )}
         <h1 className="t-display-xl full" style={{ margin: 0 }}>Pick your vibes</h1>
-        <p className="t-body muted full">Choose a few. The Node uses them for your first daily prompt — change them any time in Profile.</p>
-        <div className="vibes full">
-          {VIBES.map((v) => <Chip key={v} filled={vibes.includes(v)} onClick={() => toggle(v)}>{v}</Chip>)}
-        </div>
+        <p className="t-body muted full">Pick at least {MIN_VIBES}. The Node uses them for your first daily prompt — change them any time in Profile.</p>
+        {Object.entries(VIBES).map(([group, list]) => (
+          <div key={group} className="full" role="group" aria-labelledby={`vibes-${group}`} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <p id={`vibes-${group}`} className="t-caption muted">{group}</p>
+            <div className="vibes">
+              {list.map((v) => <Chip key={v} filled={vibes.includes(v)} onClick={() => toggle(v)}>{v}</Chip>)}
+            </div>
+          </div>
+        ))}
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
           <Button onClick={() => (returnTo ? back() : tab('home'))} disabled={!ready}>{returnTo ? 'Save' : 'Start listening'}</Button>
           <p className="t-caption muted">
-            {vibes.length} picked{ready ? '' : ` · pick at least ${MIN_VIBES}`}
+            {vibes.length} picked{ready ? ' ✓' : ` · ${MIN_VIBES - vibes.length} more to go`}
           </p>
         </div>
       </div>
