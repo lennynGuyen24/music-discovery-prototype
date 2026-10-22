@@ -1,10 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import backIcon from './assets/back.svg';
 import playIcon from './assets/play.svg';
-import navHome from './assets/nav-home.svg';
-import navCommunity from './assets/nav-community.svg';
-import navRemote from './assets/nav-remote.svg';
-import navProfile from './assets/nav-profile.svg';
 
 // Each icon SVG keeps its native width/height; left/top place it in its frame exactly as in Figma.
 export function Icon({ src, left, top }) {
@@ -252,28 +248,58 @@ export function SongRow({ track, title, artist, playing, progress, onToggle, men
   );
 }
 
+// Tab icons share the Node tiles' 24px, 2px-stroke, round-cap style. The active tab fills its shape.
+const NAV_ICONS = {
+  home: (on) => (
+    <path d="M3 10.5 12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" fill={on ? 'currentColor' : 'none'} />
+  ),
+  community: (on) => (
+    <>
+      <circle cx="9" cy="7" r="4" fill={on ? 'currentColor' : 'none'} />
+      <path d="M2 21v-1a6 6 0 0 1 6-6h2a6 6 0 0 1 6 6v1z" fill={on ? 'currentColor' : 'none'} />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75M22 21v-1a4 4 0 0 0-3-3.85" />
+    </>
+  ),
+  remote: (on) => (
+    <>
+      <path d="M4 6h16M4 12h16M4 18h16" />
+      {[[9, 6], [15, 12], [7, 18]].map(([cx, cy]) => (
+        <circle key={cy} cx={cx} cy={cy} r="2.5" fill={on ? 'currentColor' : 'var(--color-bg-ink)'} />
+      ))}
+    </>
+  ),
+  profile: (on) => (
+    <>
+      <circle cx="12" cy="8" r="4" fill={on ? 'currentColor' : 'none'} />
+      <path d="M4 21a8 8 0 0 1 16 0z" fill={on ? 'currentColor' : 'none'} />
+    </>
+  ),
+};
+
 const NAV = [
-  { id: 'home', label: 'Home', src: navHome, left: 1.75, top: 1.75, w: 18.5, h: 18.5 },
-  { id: 'community', label: 'Community', src: navCommunity, left: 0.833, top: 2.667, w: 20.333, h: 17.583 },
-  { id: 'remote', label: 'Remote', src: navRemote, left: 2.667, top: 2.667, w: 16.667, h: 16.667 },
-  { id: 'profile', label: 'Profile', src: navProfile, left: 2.667, top: 2.667, w: 16.667, h: 17.583 },
+  { id: 'home', label: 'Home' },
+  { id: 'community', label: 'Community' },
+  { id: 'remote', label: 'Remote' },
+  { id: 'profile', label: 'Profile' },
 ];
 
-// Icons are drawn as masks so they take the label's color (muted, or white when active).
+// Active tab: filled icon, white label and a sun indicator bar, not just a brighter color.
 export function BottomNav({ active, onSelect }) {
   return (
-    <nav className="bottom-nav">
-      {NAV.map((item) => (
-        <button key={item.id} type="button"
-          className={`nav-item${active === item.id ? ' active' : ''}`}
-          aria-current={active === item.id ? 'page' : undefined}
-          onClick={() => onSelect(item.id)}>
-          <span className="icon">
-            <i style={{ left: item.left, top: item.top, width: item.w, height: item.h, WebkitMaskImage: `url(${item.src})`, maskImage: `url(${item.src})` }} />
-          </span>
-          <span className="t-caption">{item.label}</span>
-        </button>
-      ))}
+    <nav className="bottom-nav" aria-label="Main">
+      {NAV.map((item) => {
+        const on = active === item.id;
+        return (
+          <button key={item.id} type="button" className={`nav-item${on ? ' active' : ''}`}
+            aria-current={on ? 'page' : undefined} onClick={() => onSelect(item.id)}>
+            <svg className="icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              {NAV_ICONS[item.id](on)}
+            </svg>
+            <span className="t-caption">{item.label}</span>
+          </button>
+        );
+      })}
     </nav>
   );
 }
