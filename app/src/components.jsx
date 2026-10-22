@@ -25,14 +25,29 @@ export function Blob({ color, left, top, size, opacity = 0.5, blur = 120 }) {
 
 // Placeholder cover art: colors and angle derived from the track id, so every track looks different.
 const ART_COLORS = ['var(--color-accent-blue)', 'var(--color-accent-magenta)', 'var(--color-accent-sun)', 'var(--color-bg-navy)'];
+// A shape layer on top of the gradient (circle, ring, stripes, horizon, dots) so lists are easy to scan.
+const LIGHT = 'color-mix(in srgb, var(--color-text-primary) 38%, transparent)';
+const DARK = 'color-mix(in srgb, var(--color-bg-ink) 55%, transparent)';
+const ART_SHAPES = [
+  [`radial-gradient(circle at 68% 32%, ${LIGHT} 0 22%, transparent 23%)`, '100% 100%'],
+  [`radial-gradient(circle, transparent 0 27%, ${LIGHT} 28% 35%, transparent 36%)`, '100% 100%'],
+  [`repeating-linear-gradient(135deg, ${LIGHT} 0 6%, transparent 6% 16%)`, '100% 100%'],
+  [`radial-gradient(circle at 50% 105%, ${DARK} 0 48%, transparent 49%)`, '100% 100%'],
+  [`radial-gradient(${LIGHT} 0 22%, transparent 26%)`, '25% 25%'],
+];
 export function Artwork({ track, size = 52, className = '', children }) {
   let h = 7;
   for (const ch of track.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
   const a = h % 4;
-  const b = (a + 1 + ((h >> 4) % 3)) % 4;
+  const b = (a + 1 + ((h >>> 4) % 3)) % 4;
+  const [shape, shapeSize] = ART_SHAPES[(h >>> 12) % ART_SHAPES.length];
   return (
     <span className={`art ${className}`} aria-hidden="true"
-      style={{ width: size, height: size, backgroundImage: `linear-gradient(${(h >> 8) % 360}deg, ${ART_COLORS[a]}, ${ART_COLORS[b]})` }}>
+      style={{
+        width: size, height: size,
+        backgroundImage: `${shape}, linear-gradient(${(h >>> 8) % 360}deg, ${ART_COLORS[a]}, ${ART_COLORS[b]})`,
+        backgroundSize: `${shapeSize}, 100% 100%`,
+      }}>
       {children}
     </span>
   );

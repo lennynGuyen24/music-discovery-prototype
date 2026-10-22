@@ -319,7 +319,7 @@ export function Community({ toast }) {
             {tuned ? `Tuned in to ${station.city} · ${station.track.artist}` : `${station.city} · Someone’s spinning ${station.track.artist} — tune in`}
           </p>
         </section>
-        <section className="card panel">
+        <section className="card panel flat">
           <div className="match">
             <span className="avatars" aria-hidden="true"><i /><i /></span>
             <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -389,7 +389,7 @@ export function Remote({ toast }) {
           <button type="button" className="tr-btn" onClick={player.next} aria-label="Next track"
             disabled={player.index >= player.queue.length - 1}><span className="tri next" /></button>
         </div>
-        <div className="card panel mix-panel">
+        <div className="card panel flat mix-panel">
           <div className="mix">
             {TONE.map(([k, label]) => (
               <Knob key={k} label={label} value={player.tone[k]} onChange={(v) => player.setTone(k, v)} />
@@ -407,12 +407,12 @@ export function Remote({ toast }) {
           </div>
         </div>
         <div className="tools full">
-          <button type="button" className="card panel navy tool" style={{ borderColor: 'color-mix(in srgb, var(--color-accent-magenta) 60%, transparent)' }}
+          <button type="button" className="card panel flat tool soon"
             onClick={() => toast('Sample finder is coming — it will show what this track is built on.')}>
             <span className="card-head"><span className="t-body-strong">Sample finder</span><Soon /></span>
             <span className="t-body muted">Hear what this track is built on →</span>
           </button>
-          <button type="button" className="card panel navy tool" style={{ borderColor: 'color-mix(in srgb, var(--color-accent-sun) 60%, transparent)' }}
+          <button type="button" className="card panel flat tool soon"
             onClick={() => toast('Friends’ stickers open in a later version.')}>
             <span className="card-head"><span className="t-body-strong">Stickers</span><Soon /></span>
             <span className="t-body muted">3 left on this record by friends →</span>
@@ -450,10 +450,10 @@ export function Profile({ go, toast, connected, vibes }) {
         </section>
         <div className="stats full">
           {[['214', 'Records'], ['38', 'Nodes'], ['12', 'Matches']].map(([v, l]) => (
-            <div key={l} className="stat"><span className="t-title">{v}</span><span className="t-caption muted">{l}</span></div>
+            <div key={l} className="stat flat"><span className="t-title">{v}</span><span className="t-caption muted">{l}</span></div>
           ))}
         </div>
-        <section className="card panel navy">
+        <section className="card panel flat">
           <div className="section-head">
             <p className="t-title">Listening room</p>
             <button type="button" className="t-caption link soon" onClick={() => toast('Arranging your room arrives with the 3D room in a later version.')}>Edit<span className="sr-only"> (coming soon)</span></button>
