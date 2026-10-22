@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HomeIndicator, StatusBar, Toast } from './components.jsx';
-import { ChooseInput, ConnectApps, Home, Results, Scanning, Welcome } from './screens.jsx';
+import { ChooseInput, ConnectApps, Home, PickVibes, Results, Scanning, Welcome } from './screens.jsx';
 
 const SCREENS = {
   welcome: Welcome,
   connect: ConnectApps,
+  vibes: PickVibes,
   home: Home,
   input: ChooseInput,
   scanning: Scanning,
@@ -18,6 +19,7 @@ export default function App() {
   const [stack, setStack] = useState(['welcome']);
   const [direction, setDirection] = useState('forward');
   const [connected, setConnected] = useState(['Spotify']);
+  const [vibes, setVibes] = useState([]);
   const [node, setNode] = useState(null);
   const [mailbox, setMailbox] = useState(2);
   const [toastMsg, setToastMsg] = useState('');
@@ -66,6 +68,8 @@ export default function App() {
             toast={toast}
             connected={connected}
             setConnected={setConnected}
+            vibes={vibes}
+            setVibes={setVibes}
             node={node}
             startNode={setNode}
             mailbox={mailbox}

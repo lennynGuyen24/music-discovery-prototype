@@ -52,6 +52,29 @@ export function StatusBar() {
   );
 }
 
+// Figma "List Row": leading dot, title, trailing meta. A button when it has onClick.
+export function ListRow({ title, meta, dot = 'magenta', metaOn, onClick, ...props }) {
+  const Tag = onClick ? 'button' : 'div';
+  return (
+    <Tag type={onClick ? 'button' : undefined} className="list-row" onClick={onClick} {...props}>
+      <span className="dot" style={{ background: `var(--color-accent-${dot})` }} />
+      <span className="title t-body-strong">{title}</span>
+      {meta && <span className={`t-caption${metaOn ? '' : ' muted'}`}>{meta}</span>}
+    </Tag>
+  );
+}
+
+// Onboarding step bar: the current step is the long dash.
+export function Progress({ step, total }) {
+  return (
+    <div className="progress-steps" aria-label={`Step ${step} of ${total}`}>
+      {Array.from({ length: total }, (_, i) => (
+        <i key={i} className={i < step ? 'done' : ''} style={{ width: i === step - 1 ? 32 : 16 }} />
+      ))}
+    </div>
+  );
+}
+
 export function HomeIndicator() {
   return <div className="home-indicator" aria-hidden="true"><span /></div>;
 }

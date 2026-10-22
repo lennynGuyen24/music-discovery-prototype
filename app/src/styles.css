@@ -181,6 +181,34 @@ button.chip:active { transform: scale(0.96); }
 .chip.pop { animation: pop 360ms cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
 
+/* ---------- List row (component "List Row") ---------- */
+.list-row {
+  width: 100%;
+  display: flex; align-items: center; gap: var(--space-12);
+  padding: var(--space-16);
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--color-surface-card) 60%, transparent);
+  border: 1px solid var(--color-border-subtle);
+  text-align: left;
+}
+button.list-row:active { transform: scale(0.98); }
+.list-row .dot { width: 32px; height: 32px; border-radius: 50%; flex: none; }
+.list-row .title { flex: 1 0 0; min-width: 0; }
+
+/* ---------- Onboarding ---------- */
+.progress-steps { display: flex; gap: var(--space-8); }
+.progress-steps i { height: 4px; border-radius: 2px; background: var(--color-border-subtle); transition: width 240ms ease; }
+.progress-steps i.done { background: var(--color-text-primary); }
+/* Planet-horizon arc from the moodboard; content sits on its dark body. */
+.horizon {
+  position: absolute; z-index: 0; left: 50%; top: 170px; transform: translateX(-50%);
+  width: 760px; height: 760px; border-radius: 50%;
+  background: var(--color-bg-ink);
+  border: 2px solid var(--color-accent-sun);
+  box-shadow: 0 10px 48px color-mix(in srgb, var(--color-accent-magenta) 90%, transparent);
+}
+.vibes { display: flex; flex-wrap: wrap; gap: var(--space-8); }
+
 /* ---------- Cards ---------- */
 .card {
   width: 100%;
@@ -188,22 +216,6 @@ button.chip:active { transform: scale(0.96); }
   border-radius: var(--radius-lg);
   text-align: left;
 }
-.service {
-  display: flex; align-items: center; gap: 12px;
-  padding: 16px;
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-md);
-}
-.service .name { flex: 1 0 0; }
-.state-pill {
-  padding: 6px 12px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--color-text-muted);
-  min-width: 87px; text-align: center;
-  transition: background 200ms ease, color 200ms ease;
-}
-.state-pill.connected { background: var(--color-accent-sun); color: var(--color-text-on-light); border-color: transparent; }
-.state-pill.loading { opacity: 0.7; }
 
 .node-card {
   display: flex; flex-direction: column; gap: 12px;

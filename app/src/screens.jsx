@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Chip, Glow, Icon, SongRow, TopBar, BottomNav } from './components.jsx';
+import { Blob, BottomNav, Button, Chip, Glow, Icon, ListRow, Progress, SongRow, TopBar } from './components.jsx';
 import { playPreview, PREVIEW_SECONDS } from './audio.js';
 
-import glowWelcome1 from './assets/glow-welcome-1.svg';
-import glowWelcome2 from './assets/glow-welcome-2.svg';
-import glowWelcome3 from './assets/glow-welcome-3.svg';
-import glowConnect1 from './assets/glow-connect-1.svg';
-import glowConnect2 from './assets/glow-connect-2.svg';
-import serviceDot from './assets/service-dot.svg';
 import glowHome1 from './assets/glow-home-1.svg';
 import glowHome2 from './assets/glow-home-2.svg';
 import recordImg from './assets/record.svg';
@@ -24,26 +18,41 @@ import glowResults1 from './assets/glow-results-1.svg';
 import glowResults2 from './assets/glow-results-2.svg';
 import glowResults3 from './assets/glow-results-3.svg';
 
-/* ---------- 01 Welcome ---------- */
-export function Welcome({ go }) {
+/* ---------- Onboarding (curated frames 01a–01c) ---------- */
+function OnboardingBackdrop() {
   return (
     <>
-      <Glow src={glowWelcome1} left={-160} top={380} size={700} />
-      <Glow src={glowWelcome2} left={140} top={560} size={420} />
-      <Glow src={glowWelcome3} left={140} top={700} size={260} />
+      <Blob color="magenta" left={-59} top={-90} size={520} opacity={0.6} blur={140} />
+      <Blob color="blue" left={21} top={-20} size={360} opacity={0.7} blur={100} />
+      <div className="horizon" aria-hidden="true" />
+    </>
+  );
+}
+
+export function Welcome({ go, toast }) {
+  return (
+    <>
+      <OnboardingBackdrop />
       <div className="content gap-16">
-        <p className="t-caption muted">App name</p>
         <div className="spacer" />
+        <Progress step={1} total={3} />
+        <p className="t-caption muted">Step 1 of 3 · Welcome</p>
         <h1 className="t-display-xl full" style={{ margin: 0 }}>Find the thread to your taste</h1>
         <p className="t-body muted full">Turn a place, a photo, a feeling or a few words into music you haven’t heard yet.</p>
-        <Button onClick={() => go('connect')}>Get started</Button>
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Button onClick={() => go('connect')}>Get started</Button>
+          <Button variant="secondary" onClick={() => toast('Sign-in isn’t in this prototype yet.')}>I already have an account</Button>
+        </div>
       </div>
     </>
   );
 }
 
-/* ---------- 02 Connect apps ---------- */
-const SERVICES = ['Spotify', 'Apple Music', 'YouTube Music', 'SoundCloud'];
+const SERVICES = [
+  { name: 'Spotify', dot: 'blue' },
+  { name: 'Apple Music', dot: 'magenta' },
+  { name: 'SoundCloud', dot: 'sun' },
+];
 
 export function ConnectApps({ go, connected, setConnected }) {
   const [loading, setLoading] = useState(null);
@@ -63,32 +72,58 @@ export function ConnectApps({ go, connected, setConnected }) {
 
   return (
     <>
-      <Glow src={glowConnect1} left={120} top={-200} size={520} />
-      <Glow src={glowConnect2} left={-200} top={-120} size={520} />
+      <OnboardingBackdrop />
       <div className="content gap-16">
-        <p className="t-caption muted">Step 1 of 1</p>
-        <h1 className="t-display-l full" style={{ margin: 0 }}>Plug in your music</h1>
-        <p className="t-body muted full">We read your library so the Node knows what you already love — and what you haven’t found yet.</p>
-        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-          {SERVICES.map((name) => {
+        <div className="spacer" />
+        <Progress step={2} total={3} />
+        <p className="t-caption muted">Step 2 of 3 · Onboarding</p>
+        <h1 className="t-display-xl full" style={{ margin: 0 }}>Plug in your sound</h1>
+        <p className="t-body muted full">Connect the apps you already listen on. The Node learns your taste from them — nothing gets posted without asking.</p>
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {SERVICES.map(({ name, dot }) => {
             const isOn = connected.includes(name);
-            const isLoading = loading === name;
             return (
-              <button key={name} type="button" className="card service" onClick={() => toggle(name)}
-                aria-pressed={isOn}>
-                <img src={serviceDot} alt="" width="32" height="32" />
-                <span className="name t-body-strong">{name}</span>
-                <span className={`state-pill t-caption${isOn ? ' connected' : ''}${isLoading ? ' loading' : ''}`}>
-                  {isOn ? '✓ Connected' : isLoading ? 'Connecting…' : 'Connect'}
-                </span>
-              </button>
+              <ListRow key={name} title={name} dot={dot} aria-pressed={isOn} metaOn={isOn}
+                meta={isOn ? '✓ Connected' : loading === name ? 'Connecting…' : 'Connect'}
+                onClick={() => toggle(name)} />
             );
           })}
         </div>
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <Button onClick={() => go('vibes')} disabled={connected.length === 0}>
+            {connected.length === 0 ? 'Connect at least one app' : 'Continue'}
+          </Button>
+          <Button variant="secondary" onClick={() => go('vibes')}>Skip for now</Button>
+        </div>
+      </div>
+    </>
+  );
+}
+
+const VIBES = ['Late night', 'Jazz samples', 'Driving', 'Bedroom pop', 'Rainy days', 'Club', 'Soul', 'Ambient', 'Hyperpop', 'Lo-fi', 'Afrobeats', 'City pop'];
+const MIN_VIBES = 3;
+
+export function PickVibes({ tab, vibes, setVibes }) {
+  const toggle = (v) => setVibes((vs) => (vs.includes(v) ? vs.filter((x) => x !== v) : [...vs, v]));
+  const ready = vibes.length >= MIN_VIBES;
+  return (
+    <>
+      <OnboardingBackdrop />
+      <div className="content gap-16">
         <div className="spacer" />
-        <Button onClick={() => go('home')} disabled={connected.length === 0}>
-          {connected.length === 0 ? 'Connect at least one app' : 'Continue'}
-        </Button>
+        <Progress step={3} total={3} />
+        <p className="t-caption muted">Step 3 of 3 · Onboarding</p>
+        <h1 className="t-display-xl full" style={{ margin: 0 }}>Pick your vibes</h1>
+        <p className="t-body muted full">Choose a few. The Node uses them for your first daily prompt — change them any time in Profile.</p>
+        <div className="vibes full">
+          {VIBES.map((v) => <Chip key={v} filled={vibes.includes(v)} onClick={() => toggle(v)}>{v}</Chip>)}
+        </div>
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12, alignItems: 'center' }}>
+          <Button onClick={() => tab('home')} disabled={!ready}>Start listening</Button>
+          <p className="t-caption muted">
+            {vibes.length} picked{ready ? '' : ` · pick at least ${MIN_VIBES}`}
+          </p>
+        </div>
       </div>
     </>
   );
