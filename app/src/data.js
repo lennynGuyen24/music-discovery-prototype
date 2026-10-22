@@ -202,3 +202,15 @@ export const STATIONS = [
 
 // The Profile listening room: one record per spine.
 export const SHELF = POOL.filter((_, i) => i % 2 === 0).slice(0, 16);
+
+// ---------- Group mailbox ----------
+export const CREWS = [
+  { id: 'studio', name: 'Studio Crew', members: 9 },
+  { id: 'roommates', name: 'Roommates', members: 3 },
+  { id: 'lisbon', name: 'Lisbon trip', members: 5 },
+];
+
+export const INITIAL_MAILBOX = [
+  { id: 'm1', from: 'Mira', crew: 'Studio Crew', title: 'Velvet hours', track: byTitle('Velvet Transit'), mine: false, read: false },
+  { id: 'm2', from: 'Jules', crew: 'Roommates', title: 'Sunday cleaning', track: byTitle('Lemon Days'), mine: false, read: false },
+];

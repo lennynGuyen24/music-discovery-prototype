@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { BottomNav, HomeIndicator, StatusBar, Toast } from './components.jsx';
 import { MiniPlayer, PlayerProvider } from './player.jsx';
 import { Community, ConnectApps, Home, PickVibes, Profile, Remote, Results, Scanning, Welcome } from './screens.jsx';
+import { INITIAL_MAILBOX } from './data.js';
 
 const SCREENS = {
   welcome: Welcome,
@@ -31,8 +32,8 @@ function Shell() {
   const [connected, setConnected] = useState(['Spotify']);
   const [vibes, setVibes] = useState([]);
   const [node, setNode] = useState(null);
-  const [mailbox, setMailbox] = useState(2);
-  const [toastMsg, setToastMsg] = useState('');
+  const [mailbox, setMailbox] = useState(INITIAL_MAILBOX);
+  const [toastMsg, setToastMsg] = useState(null); // { message, action? }
   const toastTimer = useRef(null);
 
   const screen = stack[stack.length - 1];
@@ -54,11 +55,27 @@ function Shell() {
     setDirection('back');
     setStack((s) => s.slice(0, s.indexOf('home') + 1));
   }, []);
-  const toast = useCallback((msg) => {
+  // toast('Saved', { label: 'Undo', onClick }) adds an action button; toasts with actions stay longer.
+  const toast = useCallback((message, action) => {
     clearTimeout(toastTimer.current);
-    setToastMsg(msg);
-    toastTimer.current = setTimeout(() => setToastMsg(''), 2600);
+    setToastMsg({ message, action });
+    toastTimer.current = setTimeout(() => setToastMsg(null), action ? 5000 : 2600);
   }, []);
+  const runToastAction = () => {
+    toastMsg?.action?.onClick();
+    clearTimeout(toastTimer.current);
+    setToastMsg(null);
+  };
+
+  // Mailbox: your own drops are kept (as "Sent") but never count as new.
+  const newInMailbox = mailbox.filter((m) => !m.mine && !m.read).length;
+  const drop = useCallback((title, track, crews) => {
+    const items = crews.map((crew) => ({ id: `${Date.now()}-${crew}`, from: 'You', crew, title, track, mine: true, read: true }));
+    setMailbox((m) => [...items, ...m]);
+    return items.map((i) => i.id);
+  }, []);
+  const undrop = useCallback((ids) => setMailbox((m) => m.filter((i) => !ids.includes(i.id))), []);
+  const markRead = useCallback((id) => setMailbox((m) => m.map((i) => (i.id === id ? { ...i, read: true } : i))), []);
   const tab = useCallback((id) => {
     if (id === screen) return;
     if (!SCREENS[id]) return toast(`${id[0].toUpperCase() + id.slice(1)} isn’t in this prototype yet.`);
@@ -87,12 +104,15 @@ function Shell() {
             node={node}
             startNode={setNode}
             mailbox={mailbox}
-            dropInMailbox={() => setMailbox((m) => m + 1)}
+            newInMailbox={newInMailbox}
+            drop={drop}
+            undrop={undrop}
+            markRead={markRead}
           />
           {!NO_MINI.includes(screen) && <MiniPlayer onOpen={() => tab('remote')} />}
           {TABS.includes(screen) ? <BottomNav active={screen} onSelect={tab} /> : <HomeIndicator />}
         </div>
-        <Toast message={toastMsg} />
+        <Toast message={toastMsg?.message} action={toastMsg?.action} onAction={runToastAction} />
       </main>
     </div>
   );

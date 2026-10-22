@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Artwork, Blob, Button, Chip, Glow, Icon, Knob, ListRow, Progress, SongRow, TopBar, WordsSheet } from './components.jsx';
-import { DECK, detectedWords, inputLabels, matchSet, rankTracks, resultTitle, SHELF, SNIPPETS, STATIONS, TAG_OPTIONS, whyLine } from './data.js';
+import { Artwork, Blob, Button, Chip, Glow, Icon, InboxIcon, Knob, ListRow, Progress, Sheet, SongRow, TopBar, WordsSheet } from './components.jsx';
+import { CREWS, DECK, detectedWords, inputLabels, matchSet, rankTracks, resultTitle, SHELF, SNIPPETS, STATIONS, TAG_OPTIONS, whyLine } from './data.js';
 import { usePlayer, useProgress } from './player.jsx';
 
 import iconCamera from './assets/icon-camera.svg';
@@ -141,13 +141,40 @@ const NODE_INPUTS = [
   { id: 'words', label: 'Words', icon: iconType, left: 3, top: 4 },
 ];
 
-export function Home({ go, mailbox, toast, startNode }) {
+// Records friends dropped (and the ones you sent). Tapping one plays it and marks it read.
+function MailboxSheet({ mailbox, markRead, onClose }) {
+  const player = usePlayer();
+  const tracks = mailbox.map((m) => m.track);
+  return (
+    <Sheet label="Group mailbox" onClose={onClose}>
+      <p className="t-caption muted">Group mailbox</p>
+      <p className="t-title">Records from your crews</p>
+      <div className="mail-list">
+        {mailbox.map((m) => (
+          <button key={m.id} type="button" className={`mail-item${!m.mine && !m.read ? ' unread' : ''}`}
+            onClick={() => { markRead(m.id); player.play(m.track, tracks, `Mailbox · ${m.crew}`); }}>
+            <Artwork track={m.track} size={44} />
+            <span className="mail-text">
+              <span className="t-body-strong">“{m.title}”</span>
+              <span className="t-body muted">{m.mine ? `You → ${m.crew}` : `${m.from} · ${m.crew}`} · {m.track.title}</span>
+            </span>
+            <span className="t-caption muted">{m.mine ? 'Sent' : m.read ? '' : 'New'}</span>
+          </button>
+        ))}
+      </div>
+      <Button variant="secondary" onClick={onClose}>Close</Button>
+    </Sheet>
+  );
+}
+
+export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) {
   const now = new Date();
   const day = now.toLocaleDateString('en-US', { weekday: 'long' });
   const h = now.getHours();
   const greeting = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
   const player = usePlayer();
   const [sheet, setSheet] = useState(false);
+  const [inbox, setInbox] = useState(false);
   const fileRef = useRef(null);
 
   // Each Node tile goes straight into its input: camera/mic scan, media opens the picker, words opens a sheet.
@@ -173,9 +200,16 @@ export function Home({ go, mailbox, toast, startNode }) {
       <Blob color="magenta" left={140} top={-120} size={420} opacity={0.4} blur={140} />
       <Blob color="blue" left={-160} top={120} size={380} opacity={0.45} blur={140} />
       <div className="content gap-16" style={{ paddingBottom: 24 }}>
-        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <p className="t-caption muted">{day} · {greeting}, Lan</p>
-          <h1 className="t-display-l" style={{ margin: 0 }}>What’s your vibe?</h1>
+        <div className="home-head full">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <p className="t-caption muted">{day} · {greeting}, Lan</p>
+            <h1 className="t-display-l" style={{ margin: 0 }}>What’s your vibe?</h1>
+          </div>
+          <button type="button" className="inbox-btn" onClick={() => setInbox(true)}
+            aria-label={`Group mailbox${newInMailbox ? `, ${newInMailbox} new` : ''}`}>
+            <InboxIcon />
+            {newInMailbox > 0 && <span className="badge" aria-hidden="true">{newInMailbox}</span>}
+          </button>
         </div>
         <button type="button" className="card prompt-card"
           onClick={() => toast('Answering prompts isn’t in this prototype yet.')}>
@@ -216,10 +250,11 @@ export function Home({ go, mailbox, toast, startNode }) {
             </button>
           ))}
         </div>
-        <ListRow title={`${mailbox} records in your mailbox`} meta="New" metaOn
-          onClick={() => toast(`${mailbox} records waiting — the mailbox opens in a later version.`)} />
+        <ListRow title={newInMailbox ? `${newInMailbox} new records in your mailbox` : 'Your group mailbox'}
+          meta={newInMailbox ? 'New' : 'Open'} metaOn={newInMailbox > 0} onClick={() => setInbox(true)} />
       </div>
       {sheet && <WordsSheet onSubmit={submitWords} onClose={() => setSheet(false)} />}
+      {inbox && <MailboxSheet mailbox={mailbox} markRead={markRead} onClose={() => setInbox(false)} />}
     </>
   );
 }
@@ -539,7 +574,32 @@ function TagChip({ kind, value, onSwap, onRemove, onAdd }) {
   );
 }
 
-export function Results({ go, back, node, startNode, toast, dropInMailbox, home }) {
+// Pick which crews get the Node. Nothing is sent until you confirm.
+function DropSheet({ title, onConfirm, onClose }) {
+  const [crews, setCrews] = useState([CREWS[0].name]);
+  const toggle = (n) => setCrews((cs) => (cs.includes(n) ? cs.filter((x) => x !== n) : [...cs, n]));
+  return (
+    <Sheet label="Drop in the group mailbox" onClose={onClose}>
+      <p className="t-caption muted">Group mailbox</p>
+      <p className="t-title">Drop “{title}” in…</p>
+      <div className="crew-list" role="group" aria-label="Crews">
+        {CREWS.map((c) => (
+          <label key={c.id} className="crew">
+            <input type="checkbox" checked={crews.includes(c.name)} onChange={() => toggle(c.name)} />
+            <span className="t-body-strong">{c.name}</span>
+            <span className="t-caption muted">{c.members} people</span>
+          </label>
+        ))}
+      </div>
+      <Button onClick={() => onConfirm(crews)} disabled={!crews.length}>
+        {crews.length ? `Drop in ${crews.length === 1 ? crews[0] : `${crews.length} crews`}` : 'Pick a crew'}
+      </Button>
+      <Button variant="secondary" onClick={onClose}>Cancel</Button>
+    </Sheet>
+  );
+}
+
+export function Results({ go, back, node, startNode, toast, drop, undrop }) {
   const set = matchSet(node);
   const title = resultTitle(node);
   const [tags, setTags] = useState(set.tags);
@@ -553,7 +613,15 @@ export function Results({ go, back, node, startNode, toast, dropInMailbox, home 
   const player = usePlayer();
   const progress = useProgress();
   const [saved, setSaved] = useState(false);
+  const [dropping, setDropping] = useState(false);
+  const [dropped, setDropped] = useState(null); // ids, so Undo can take them back
   const toggle = (track) => player.play(track, tracks, `Your Node · ${title}`);
+  const confirmDrop = (crews) => {
+    const ids = drop(title, tracks[0], crews);
+    setDropping(false);
+    setDropped(ids);
+    toast(`Dropped in ${crews.join(' + ')}.`, { label: 'Undo', onClick: () => { undrop(ids); setDropped(null); } });
+  };
 
   const swapTag = (kind) => setTags((tg) => {
     const opts = TAG_OPTIONS[kind];
@@ -605,10 +673,11 @@ export function Results({ go, back, node, startNode, toast, dropInMailbox, home 
         <Button onClick={() => { setSaved(true); toast(`Saved “${title}” to your library.`); }} disabled={saved}>
           {saved ? 'Saved ✓' : 'Save as playlist'}
         </Button>
-        <Button variant="secondary" onClick={() => { dropInMailbox(); home(); toast('Dropped in the Studio Crew mailbox.'); }}>
-          Drop in the group mailbox
+        <Button variant="secondary" onClick={() => setDropping(true)} disabled={!!dropped}>
+          {dropped ? 'Dropped ✓' : 'Drop in the group mailbox'}
         </Button>
       </div>
+      {dropping && <DropSheet title={title} onConfirm={confirmDrop} onClose={() => setDropping(false)} />}
       {editing && <WordsSheet initial={node?.mode === 'words' ? node.text : ''} onSubmit={editInput} onClose={() => setEditing(false)} />}
     </>
   );
