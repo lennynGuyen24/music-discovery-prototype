@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Artwork, Blob, Button, Chip, Glow, Icon, InboxIcon, Knob, ListRow, Progress, Sheet, SongRow, TopBar, WordsSheet } from './components.jsx';
+import { Artwork, Blob, Button, Chip, Glow, Icon, InboxIcon, Knob, ListRow, Progress, Segmented, Sheet, SongRow, TopBar, WordsSheet } from './components.jsx';
 import { CREWS, DECK, detectedWords, inputLabels, matchSet, rankTracks, resultTitle, SHELF, SNIPPETS, STATIONS, TAG_OPTIONS, whyLine } from './data.js';
 import { usePlayer, useProgress } from './player.jsx';
 
@@ -365,9 +365,7 @@ export function Remote({ toast }) {
           <p className="t-caption muted">Remote · Living room speaker</p>
           <h1 className="t-display-l" style={{ margin: 0 }}>Now playing</h1>
         </div>
-        <div className="chip-row" role="group" aria-label="Filter">
-          {Object.keys(DECK).map((f) => <Chip key={f} filled={filter === f} onClick={() => choose(f)}>{f}</Chip>)}
-        </div>
+        <Segmented label="Filter the deck" options={Object.keys(DECK)} value={filter} onChange={choose} />
         <div className="now-playing full">
           <button type="button" className={`record${player.playing ? ' spinning' : ''}`} onClick={player.toggle}
             aria-label={`${player.playing ? 'Pause' : 'Play'} ${track.title}`} aria-pressed={player.playing}>
@@ -399,20 +397,22 @@ export function Remote({ toast }) {
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p className="t-caption muted">Label this track</p>
           <div className="chip-row">
-            {['Late night', 'Driving'].map((l) => <Chip key={l} filled={labels.includes(l)} onClick={() => toggleLabel(l)}>{l}</Chip>)}
-            <Chip onClick={() => toast('Custom labels arrive in a later version.')}>+ Add</Chip>
+            {['Late night', 'Driving'].map((l) => (
+              <Chip key={l} variant="tag" filled={labels.includes(l)} onClick={() => toggleLabel(l)}>{labels.includes(l) ? `✓ ${l}` : l}</Chip>
+            ))}
+            <Chip variant="tag" onClick={() => toast('Custom labels arrive in a later version.')}>+ Add</Chip>
           </div>
         </div>
         <div className="tools full">
           <button type="button" className="card panel navy tool" style={{ borderColor: 'color-mix(in srgb, var(--color-accent-magenta) 60%, transparent)' }}
             onClick={() => toast('Sample finder is coming — it will show what this track is built on.')}>
             <span className="t-body-strong">Sample finder</span>
-            <span className="t-caption muted">Hear what this track is built on →</span>
+            <span className="t-body muted">Hear what this track is built on →</span>
           </button>
           <button type="button" className="card panel navy tool" style={{ borderColor: 'color-mix(in srgb, var(--color-accent-sun) 60%, transparent)' }}
             onClick={() => toast('Friends’ stickers open in a later version.')}>
             <span className="t-body-strong">Stickers</span>
-            <span className="t-caption muted">3 left on this record by friends →</span>
+            <span className="t-body muted">3 left on this record by friends →</span>
           </button>
         </div>
       </div>

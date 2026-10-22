@@ -178,6 +178,15 @@ p { margin: 0; }
 }
 button.chip:active { transform: scale(0.96); }
 .chip.filled { background: var(--color-accent-sun); color: var(--color-text-on-light); border-color: var(--color-accent-sun); }
+.chip.tag { background: none; border-color: var(--color-text-muted); }
+.chip.tag.filled { background: none; color: var(--color-accent-sun); border-color: var(--color-accent-sun); }
+.segmented {
+  width: 100%; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 2px;
+  padding: 2px; border-radius: var(--radius-full);
+  background: var(--color-surface-card); border: 1px solid var(--color-border-subtle);
+}
+.segmented button { min-height: 44px; border-radius: var(--radius-full); color: var(--color-text-muted); transition: background 160ms ease, color 160ms ease; }
+.segmented button.on { background: var(--color-accent-sun); color: var(--color-text-on-light); }
 .chip.pop { animation: pop 360ms cubic-bezier(.2,1.4,.4,1) both; }
 @keyframes pop { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
 
@@ -322,7 +331,8 @@ button.list-row:active { transform: scale(0.98); }
 .dial .pointer { position: absolute; left: 34.5px; top: 12px; width: 3px; height: 16px; border-radius: 2px; background: var(--color-text-primary); transform-origin: 1.5px 24px; }
 .dial:focus-visible { outline: 2px solid var(--color-accent-sun); outline-offset: 2px; }
 .tools { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); }
-.tool { gap: var(--space-4); }
+.tool { gap: var(--space-4); min-width: 0; }
+.tool .t-body { font-size: 13px; line-height: 1.35; overflow-wrap: anywhere; }
 
 /* ---------- Profile ---------- */
 .identity { display: flex; align-items: center; gap: var(--space-16); }

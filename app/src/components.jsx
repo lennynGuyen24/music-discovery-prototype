@@ -151,8 +151,9 @@ export function TopBar({ title, onBack }) {
 }
 
 // Figma "Chip" (State=Default/Selected). Pass onClick to make it a toggle button.
-export function Chip({ children, filled, pop, style, onClick }) {
-  const className = `chip t-caption${filled ? ' filled' : ''}${pop ? ' pop' : ''}`;
+// variant="tag" is an outlined label you add to a track (selected shows a check).
+export function Chip({ children, filled, pop, style, onClick, variant }) {
+  const className = `chip t-caption${variant ? ` ${variant}` : ''}${filled ? ' filled' : ''}${pop ? ' pop' : ''}`;
   if (onClick) {
     return <button type="button" className={className} style={style} aria-pressed={!!filled} onClick={onClick}>{children}</button>;
   }
@@ -160,6 +161,28 @@ export function Chip({ children, filled, pop, style, onClick }) {
 }
 
 // A track row: the main area plays/pauses; "⋯" (or a long press) opens More/Less like this.
+// Single-choice filter (radio group): arrow keys move between options.
+export function Segmented({ label, options, value, onChange }) {
+  const onKeyDown = (e) => {
+    const step = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key];
+    if (!step) return;
+    e.preventDefault();
+    const i = Math.max(0, options.indexOf(value));
+    const next = options[(i + step + options.length) % options.length];
+    onChange(next);
+    e.currentTarget.querySelector(`[data-value="${next}"]`)?.focus();
+  };
+  return (
+    <div className="segmented" role="radiogroup" aria-label={label} onKeyDown={onKeyDown}>
+      {options.map((o) => (
+        <button key={o} type="button" role="radio" data-value={o} aria-checked={value === o}
+          tabIndex={value === o || (!options.includes(value) && o === options[0]) ? 0 : -1}
+          className={`t-caption${value === o ? ' on' : ''}`} onClick={() => onChange(o)}>{o}</button>
+      ))}
+    </div>
+  );
+}
+
 export function SongRow({ track, title, artist, playing, progress, onToggle, menu }) {
   const [open, setOpen] = useState(false);
   const press = useRef(null);
