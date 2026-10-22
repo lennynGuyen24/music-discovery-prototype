@@ -4,6 +4,27 @@ One entry per working session, newest first. Keep each entry short: what changed
 
 ---
 
+## 2026-10-21: Design-audit fixes (v0.3-audit)
+
+**Done**
+- Phase 1, core loop: Node results depend on the input (4 mood sets plus a fallback, readable titles, a loading label for each input type); refine controls (swappable tags, More/Less like this, Regenerate, Edit input, "Why these picks"); one shared player with a mini-player and Remote Prev/Play/Next; a mailbox crew picker with Undo and an inbox badge
+- Phase 2, flow details: Home leads with the Node; onboarding back buttons, a connecting guard and grouped vibes; a Remote segmented filter; "Soon" states on unbuilt features; a mic/camera explainer; toasts that sit above the mini-player with View/Undo actions
+- Phase 3, human factors: a 12px minimum and sentence case; smaller screen titles; a magenta text token at 4.5:1 or better; 44px hit areas everywhere; filled tab icons; one hero card per screen and varied artwork; the frame scaled as a whole
+- Figma: added `color/accent/magenta-text`, set Caption to 12px, added the Meta (13px) and Heading (24px) text styles
+
+**Decisions**
+- Kept the 402×874 frame (the Figma size) instead of the audit's 390×844
+- The listening-room shelf is one tap target, because the spines are too thin for 44px
+- The Remote knobs really shape the sound (filter, key, tempo) instead of only showing a hint
+- Every unbuilt feature is marked "Soon", not just the four the audit named
+
+**Next**
+- Update the curated Figma frames to the new layout (Home order, the mini-player, segmented filters). This was held back while the "Lan · Mid-fi" pass is being edited on the same page
+- Test the real mic and camera on a phone (the browser pane blocks them)
+- Push and check the live demo (`/ship`)
+
+---
+
 ## 2026-10-21: Curated screens from the sitemap (v0.2-curated)
 
 **Done**

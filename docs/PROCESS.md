@@ -85,6 +85,22 @@ After the team voted on a moodboard and I reworked the sitemap, I designed one c
 - **Onboarding you can come back to.** Connect apps and Pick your vibes double as Profile editors: they return to Profile with "Done"/"Save" instead of continuing onboarding.
 - **Nothing is a dead end.** Map pins, snippets, the record and shelf spines play previews. Features that aren't built yet show a toast.
 
+### 5c. Design audit (v0.3-audit)
+
+A five-person audit ranked the issues, and I fixed them in three phases:
+
+| Phase | Theme | Key changes |
+|---|---|---|
+| 1 | Core loop | Results depend on the input, refine controls, a shared now-playing state with a mini-player, a mailbox with confirm and Undo |
+| 2 | Flow details | Node-first Home, onboarding fixes, Remote filters vs labels, "Soon" states, a mic/camera explainer, toast placement |
+| 3 | Human factors | A 12px minimum, a magenta text token at 4.5:1 or better, 44px hit areas, a tab active state, one hero card per screen |
+
+**Design decisions**
+- **Results must feel earned.** Four mock result sets keyed to words in the input (rain/night → moody, sun/drive → upbeat, club/dance → high energy, coffee/quiet → calm) make two inputs visibly different, and the refine controls let people steer instead of starting over.
+- **One player, everywhere.** A single now-playing state means the Remote always shows what is actually playing, and the mini-player keeps it one tap away.
+- **Honest affordances.** Anything not built yet shows a "Soon" badge before it's tapped, and tapping still explains why.
+- **Accessibility by measurement.** Contrast, minimum text size and 44px targets were checked with scripts over every screen, not by eye.
+
 ## 6. Shipping the live demo
 
 - Code lives on GitHub; every push to `main` runs [`deploy.yml`](../.github/workflows/deploy.yml), which builds the app and publishes it to GitHub Pages

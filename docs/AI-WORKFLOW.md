@@ -40,6 +40,7 @@ Keep this list growing. These prompts are the most useful evidence of process.
 | Real audio | "Make the play buttons play real 15s previews without using licensed tracks." | `audio.js` (Web Audio synthesis) |
 | Curated screens | "I updated this page with the sitemap: [link]. Build each section a frame (onboarding, homepage, community, remote control, profile)." | Five curated frames plus Chip / List Row / Knob / Stat components, built from the existing tokens |
 | Plan first | "Propose a plan to update the React prototype to match the five new curated Figma screens." | A one-commit-per-screen plan with open questions, answered before any code changed |
+| Design audit | "Apply design-audit fixes … Give me a short plan listing the files you'll touch for each phase. Wait for my OK before you write any code." | A phased plan, one commit per audit item, and script-verified contrast, text sizes and hit areas |
 
 ## Guardrails
 
