@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Blob, BottomNav, Button, Chip, Glow, Icon, Knob, ListRow, Progress, SongRow, TopBar, usePreview, WordsSheet } from './components.jsx';
-import { playPreview, PREVIEW_SECONDS } from './audio.js';
-import { detectedWords, inputLabels, matchSet, rankTracks, resultTitle, TAG_OPTIONS, whyLine } from './data.js';
+import { Artwork, Blob, Button, Chip, Glow, Icon, Knob, ListRow, Progress, SongRow, TopBar, WordsSheet } from './components.jsx';
+import { DECK, detectedWords, inputLabels, matchSet, rankTracks, resultTitle, SHELF, SNIPPETS, STATIONS, TAG_OPTIONS, whyLine } from './data.js';
+import { usePlayer, useProgress } from './player.jsx';
 
 import iconCamera from './assets/icon-camera.svg';
 import iconMic from './assets/icon-mic.svg';
@@ -141,20 +141,12 @@ const NODE_INPUTS = [
   { id: 'words', label: 'Words', icon: iconType, left: 3, top: 4 },
 ];
 
-const SNIPPETS = [
-  { title: 'Night Swim', artist: 'Ravyn Lenae', from: 'blue', to: 'magenta' },
-  { title: 'Glass Hour', artist: 'Mk.gee', from: 'magenta', to: 'sun' },
-  { title: 'Low Sun', artist: 'Bonobo', from: 'navy', to: 'blue' },
-  { title: 'Overcast', artist: 'Tirzah', from: 'sun', to: 'blue' },
-];
-const tokenColor = (name) => (name === 'navy' ? 'var(--color-bg-navy)' : `var(--color-accent-${name})`);
-
-export function Home({ go, tab, mailbox, toast, startNode }) {
+export function Home({ go, mailbox, toast, startNode }) {
   const now = new Date();
   const day = now.toLocaleDateString('en-US', { weekday: 'long' });
   const h = now.getHours();
   const greeting = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
-  const preview = usePreview();
+  const player = usePlayer();
   const [sheet, setSheet] = useState(false);
   const fileRef = useRef(null);
 
@@ -212,13 +204,13 @@ export function Home({ go, tab, mailbox, toast, startNode }) {
           <button type="button" className="t-caption" onClick={() => toast('The full catalogue opens in a later version.')}>See all</button>
         </div>
         <div className="shelf">
-          {SNIPPETS.map((sn, i) => (
-            <button key={sn.title} type="button" className="snippet" aria-pressed={preview.playing === sn.title}
-              aria-label={`${preview.playing === sn.title ? 'Stop' : 'Play'} ${sn.title} by ${sn.artist}`}
-              onClick={() => preview.toggle(sn.title, i)}>
-              <span className="cover" style={{ backgroundImage: `linear-gradient(135deg, ${tokenColor(sn.from)}, ${tokenColor(sn.to)})` }}>
-                {preview.playing === sn.title && <span className="eq"><i /><i /><i /></span>}
-              </span>
+          {SNIPPETS.map((sn) => (
+            <button key={sn.id} type="button" className="snippet" aria-pressed={player.isPlaying(sn.id)}
+              aria-label={`${player.isPlaying(sn.id) ? 'Pause' : 'Play'} ${sn.title} by ${sn.artist}`}
+              onClick={() => player.play(sn, SNIPPETS, 'Picked for you')}>
+              <Artwork track={sn} size={124} className="cover">
+                {player.isPlaying(sn.id) && <span className="eq"><i /><i /><i /></span>}
+              </Artwork>
               <span className="t-body-strong">{sn.title}</span>
               <span className="t-caption muted">{sn.artist}</span>
             </button>
@@ -227,20 +219,12 @@ export function Home({ go, tab, mailbox, toast, startNode }) {
         <ListRow title={`${mailbox} records in your mailbox`} meta="New" metaOn
           onClick={() => toast(`${mailbox} records waiting — the mailbox opens in a later version.`)} />
       </div>
-      <BottomNav active="home" onSelect={tab} />
       {sheet && <WordsSheet onSubmit={submitWords} onClose={() => setSheet(false)} />}
     </>
   );
 }
 
 /* ---------- 03 Community (curated) ---------- */
-const STATIONS = [
-  { city: 'Lisbon', x: 60, y: 30, color: 'magenta', spinning: 'Kaytranada' },
-  { city: 'Seoul', x: 190, y: 12, color: 'blue', spinning: 'Yaeji' },
-  { city: 'Lagos', x: 250, y: 60, color: 'sun', spinning: 'Tems' },
-  { city: 'Mexico City', x: 120, y: 76, color: 'blue', spinning: 'Silvana Estrada' },
-];
-
 function Globe({ selected, onSelect }) {
   return (
     <div className="globe">
@@ -259,14 +243,14 @@ function Globe({ selected, onSelect }) {
   );
 }
 
-export function Community({ tab, toast }) {
-  const preview = usePreview();
-  const [station, setStation] = useState(STATIONS[0]);
-  const tuned = preview.playing === station.city;
+export function Community({ toast }) {
+  const player = usePlayer();
+  const [station, setStation] = useState(() => STATIONS.find((st) => player.track?.id === st.track.id) ?? STATIONS[0]);
+  const tuned = player.isPlaying(station.track.id);
 
-  const tuneIn = (s) => {
-    setStation(s);
-    preview.toggle(s.city, STATIONS.indexOf(s));
+  const tuneIn = (st) => {
+    setStation(st);
+    player.play(st.track, [st.track], `Global radio · ${st.city}`);
   };
 
   return (
@@ -311,38 +295,22 @@ export function Community({ tab, toast }) {
           ))}
         </div>
       </div>
-      <BottomNav active="community" onSelect={tab} />
     </>
   );
 }
 
 /* ---------- 04 Remote Control (curated) ---------- */
-// Each filter loads a different record onto the deck.
-const DECK = {
-  All: { title: 'Night Swim', artist: 'Ravyn Lenae', side: 'Side A · 2 of 6', sound: 0 },
-  Vinyl: { title: 'Glass Hour', artist: 'Mk.gee', side: 'Side B · 1 of 5', sound: 1 },
-  Samples: { title: 'Low Sun', artist: 'Bonobo', side: 'Sample pack · 4 of 9', sound: 2 },
-  Live: { title: 'Overcast', artist: 'Tirzah', side: 'Live set · 3 of 7', sound: 3 },
-};
-
-export function Remote({ tab, toast }) {
-  const preview = usePreview();
-  const [filter, setFilter] = useState('All');
-  const [plays, setPlays] = useState(0);
-  const [mix, setMix] = useState({ Energy: 0.7, Mood: 0.45, Tempo: 0.6 });
+// The Remote is the full player: it always shows what's actually playing.
+export function Remote({ toast }) {
+  const player = usePlayer();
+  const progress = useProgress();
   const [labels, setLabels] = useState(['Late night']);
-  const track = DECK[filter];
-  const playing = preview.playing === track.title;
-
-  const togglePlay = () => {
-    if (!playing) setPlays((n) => n + 1);
-    preview.toggle(track.title, track.sound);
-  };
-  const choose = (f) => {
-    if (playing) preview.toggle(track.title, track.sound); // stop the old record
-    setFilter(f);
-  };
+  useEffect(() => { if (!player.track) player.load(DECK.All, 'Remote · All'); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  const track = player.track ?? DECK.All[0];
+  const filter = Object.keys(DECK).find((f) => player.source === `Remote · ${f}`);
+  const choose = (f) => player.load(DECK[f], `Remote · ${f}`, player.playing);
   const toggleLabel = (l) => setLabels((ls) => (ls.includes(l) ? ls.filter((x) => x !== l) : [...ls, l]));
+  const TONE = [['energy', 'Energy'], ['mood', 'Mood'], ['tempo', 'Tempo']];
 
   return (
     <>
@@ -357,23 +325,32 @@ export function Remote({ tab, toast }) {
           {Object.keys(DECK).map((f) => <Chip key={f} filled={filter === f} onClick={() => choose(f)}>{f}</Chip>)}
         </div>
         <div className="now-playing full">
-          <button type="button" className={`record${playing ? ' spinning' : ''}`} onClick={togglePlay}
-            aria-label={`${playing ? 'Stop' : 'Play'} ${track.title}`} aria-pressed={playing}>
+          <button type="button" className={`record${player.playing ? ' spinning' : ''}`} onClick={player.toggle}
+            aria-label={`${player.playing ? 'Pause' : 'Play'} ${track.title}`} aria-pressed={player.playing}>
             <span className="sticker" aria-hidden="true" />
           </button>
           <div className="deck-meta">
-            <p className="t-caption muted">{track.side}</p>
+            <p className="t-caption muted">{player.source || 'Queue'} · {player.index + 1} of {player.queue.length || 1}</p>
             <p className="t-title">{track.title}</p>
             <p className="t-body muted">{track.artist}</p>
-            <span className="played">
-              <i key={`${filter}-${plays}`} className={playing ? 'run' : ''} style={{ '--dur': `${PREVIEW_SECONDS}s` }} />
-            </span>
+            <span className="played"><i style={{ width: `${progress * 100}%` }} /></span>
           </div>
         </div>
-        <div className="card panel mix">
-          {Object.entries(mix).map(([k, v]) => (
-            <Knob key={k} label={k} value={v} onChange={(nv) => setMix((m) => ({ ...m, [k]: nv }))} />
-          ))}
+        <div className="transport full" role="group" aria-label="Playback">
+          <button type="button" className="tr-btn" onClick={player.prev} aria-label="Previous track"><span className="tri prev" /></button>
+          <button type="button" className="tr-btn main" onClick={player.toggle} aria-label={player.playing ? 'Pause' : 'Play'}>
+            {player.playing ? <span className="pause-icon"><i /><i /></span> : <span className="play-tri" />}
+          </button>
+          <button type="button" className="tr-btn" onClick={player.next} aria-label="Next track"
+            disabled={player.index >= player.queue.length - 1}><span className="tri next" /></button>
+        </div>
+        <div className="card panel mix-panel">
+          <div className="mix">
+            {TONE.map(([k, label]) => (
+              <Knob key={k} label={label} value={player.tone[k]} onChange={(v) => player.setTone(k, v)} />
+            ))}
+          </div>
+          <p className="t-body muted">Energy brightens the sound, Mood shifts the key, Tempo changes the speed.</p>
         </div>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <p className="t-caption muted">Label this track</p>
@@ -395,7 +372,6 @@ export function Remote({ tab, toast }) {
           </button>
         </div>
       </div>
-      <BottomNav active="remote" onSelect={tab} />
     </>
   );
 }
@@ -404,8 +380,8 @@ export function Remote({ tab, toast }) {
 const SPINES = ['magenta', 'blue', 'sun', 'card', 'magenta', 'subtle', 'blue', 'sun', 'magenta', 'card', 'blue', 'sun', 'subtle', 'magenta', 'blue', 'sun'];
 const spineColor = (c) => (c === 'card' ? 'var(--color-surface-card)' : c === 'subtle' ? 'var(--color-border-subtle)' : `var(--color-accent-${c})`);
 
-export function Profile({ go, tab, toast, connected, vibes }) {
-  const preview = usePreview();
+export function Profile({ go, toast, connected, vibes }) {
+  const player = usePlayer();
   return (
     <>
       <Blob color="magenta" left={100} top={-160} size={420} opacity={0.45} blur={140} />
@@ -434,11 +410,11 @@ export function Profile({ go, tab, toast, connected, vibes }) {
             <button type="button" className="t-caption muted" onClick={() => toast('Arranging your room arrives with the 3D room in a later version.')}>Edit</button>
           </div>
           <div className="room-shelf">
-            {SPINES.map((c, i) => (
-              <button key={i} type="button" className={`spine${preview.playing === i ? ' out' : ''}`}
-                aria-label={`${preview.playing === i ? 'Stop' : 'Play'} record ${i + 1} from your shelf`}
-                style={{ width: i % 3 === 0 ? 12 : 8, height: 46 + ((i * 7) % 14), background: spineColor(c) }}
-                onClick={() => preview.toggle(i, i)} />
+            {SHELF.map((tr, i) => (
+              <button key={tr.id} type="button" className={`spine${player.isPlaying(tr.id) ? ' out' : ''}`}
+                aria-label={`${player.isPlaying(tr.id) ? 'Pause' : 'Play'} ${tr.title} by ${tr.artist}`}
+                style={{ width: i % 3 === 0 ? 12 : 8, height: 46 + ((i * 7) % 14), background: spineColor(SPINES[i % SPINES.length]) }}
+                onClick={() => player.play(tr, SHELF, 'Listening room')} />
             ))}
           </div>
           <p className="t-caption muted">The record on the table plays whatever you’re on right now.</p>
@@ -449,7 +425,6 @@ export function Profile({ go, tab, toast, connected, vibes }) {
           <ListRow title="Settings" meta="→" dot="subtle" onClick={() => toast('Settings aren’t in this prototype yet.')} />
         </div>
       </div>
-      <BottomNav active="profile" onSelect={tab} />
     </>
   );
 }
@@ -465,6 +440,8 @@ export function Scanning({ go, back, node }) {
   const tags = detectedWords(node);
   const labels = inputLabels(node);
   const listening = node?.mode === 'mic';
+  const { pause } = usePlayer();
+  useEffect(() => { if (listening) pause(); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Real camera / microphone input
   useEffect(() => {
@@ -573,33 +550,10 @@ export function Results({ go, back, node, startNode, toast, dropInMailbox, home 
   const tracks = rankTracks(set, tags, { liked, hidden, seed });
   const likedTitles = tracks.filter((t) => liked.includes(t.id)).map((t) => t.title);
 
-  const [playing, setPlaying] = useState(null);
-  const [progress, setProgress] = useState(0);
+  const player = usePlayer();
+  const progress = useProgress();
   const [saved, setSaved] = useState(false);
-  const stopRef = useRef(null);
-
-  useEffect(() => () => stopRef.current?.(), []);
-
-  useEffect(() => {
-    if (playing === null) return;
-    const started = performance.now();
-    let raf;
-    const tick = () => {
-      setProgress(Math.min(1, (performance.now() - started) / (PREVIEW_SECONDS * 1000)));
-      raf = requestAnimationFrame(tick);
-    };
-    tick();
-    return () => cancelAnimationFrame(raf);
-  }, [playing]);
-
-  const toggle = (track) => {
-    stopRef.current?.();
-    stopRef.current = null;
-    if (playing === track.id) return setPlaying(null);
-    stopRef.current = playPreview(track.sound, () => setPlaying(null));
-    setProgress(0);
-    setPlaying(track.id);
-  };
+  const toggle = (track) => player.play(track, tracks, `Your Node · ${title}`);
 
   const swapTag = (kind) => setTags((tg) => {
     const opts = TAG_OPTIONS[kind];
@@ -608,25 +562,23 @@ export function Results({ go, back, node, startNode, toast, dropInMailbox, home 
   const setTag = (kind, value) => setTags((tg) => ({ ...tg, [kind]: value }));
   const moreLike = (t) => { setLiked((l) => [...l.filter((x) => x !== t.id), t.id]); toast(`More like “${t.title}” coming up.`); };
   const lessLike = (t) => {
-    if (playing === t.id) toggle(t);
+    if (player.isPlaying(t.id)) player.pause();
     setHidden((h) => [...h, t.id]);
     toast(`Got it — less like “${t.title}”.`);
   };
   const editInput = (text) => {
-    stopRef.current?.();
     setEditing(false);
     startNode({ mode: 'words', text });
     go('scanning');
   };
 
-  const leave = (fn) => { stopRef.current?.(); fn(); };
   const [a1, a2] = set.accents;
 
   return (
     <>
       <Blob color={a1} left={-200} top={-200} size={560} opacity={0.5} blur={160} />
       <Blob color={a2} left={160} top={-120} size={420} opacity={0.45} blur={140} />
-      <TopBar title="Your Node" onBack={() => leave(back)} />
+      <TopBar title="Your Node" onBack={back} />
       <div className="content gap-16">
         <p className="t-caption muted">Your vibe sounds like</p>
         <h1 className="t-display-xl full" style={{ margin: 0 }}>{title}</h1>
@@ -639,8 +591,8 @@ export function Results({ go, back, node, startNode, toast, dropInMailbox, home 
         </div>
         <div className="tracks" aria-live="polite">
           {tracks.map((t) => (
-            <SongRow key={t.id} title={t.title} artist={`${t.artist} · ${t.note.toLowerCase()}`}
-              playing={playing === t.id} progress={progress} onToggle={() => toggle(t)}
+            <SongRow key={t.id} track={t} title={t.title} artist={`${t.artist} · ${t.note.toLowerCase()}`}
+              playing={player.isPlaying(t.id)} progress={player.track?.id === t.id ? progress : 0} onToggle={() => toggle(t)}
               menu={[{ label: 'More like this', onSelect: () => moreLike(t) }, { label: 'Less like this', onSelect: () => lessLike(t) }]} />
           ))}
         </div>
@@ -653,7 +605,7 @@ export function Results({ go, back, node, startNode, toast, dropInMailbox, home 
         <Button onClick={() => { setSaved(true); toast(`Saved “${title}” to your library.`); }} disabled={saved}>
           {saved ? 'Saved ✓' : 'Save as playlist'}
         </Button>
-        <Button variant="secondary" onClick={() => leave(() => { dropInMailbox(); home(); toast('Dropped in the Studio Crew mailbox.'); })}>
+        <Button variant="secondary" onClick={() => { dropInMailbox(); home(); toast('Dropped in the Studio Crew mailbox.'); }}>
           Drop in the group mailbox
         </Button>
       </div>

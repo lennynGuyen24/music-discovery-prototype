@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { HomeIndicator, StatusBar, Toast } from './components.jsx';
+import { BottomNav, HomeIndicator, StatusBar, Toast } from './components.jsx';
+import { MiniPlayer, PlayerProvider } from './player.jsx';
 import { Community, ConnectApps, Home, PickVibes, Profile, Remote, Results, Scanning, Welcome } from './screens.jsx';
 
 const SCREENS = {
@@ -18,6 +19,13 @@ const SCREENS = {
 const TABS = ['home', 'community', 'remote', 'profile'];
 
 export default function App() {
+  return <PlayerProvider><Shell /></PlayerProvider>;
+}
+
+// No mini-player during onboarding, while the Node scans, or on the Remote (it is the full player).
+const NO_MINI = ['welcome', 'connect', 'vibes', 'scanning', 'remote'];
+
+function Shell() {
   const [stack, setStack] = useState(['welcome']);
   const [direction, setDirection] = useState('forward');
   const [connected, setConnected] = useState(['Spotify']);
@@ -81,7 +89,8 @@ export default function App() {
             mailbox={mailbox}
             dropInMailbox={() => setMailbox((m) => m + 1)}
           />
-          {!TABS.includes(screen) && <HomeIndicator />}
+          {!NO_MINI.includes(screen) && <MiniPlayer onOpen={() => tab('remote')} />}
+          {TABS.includes(screen) ? <BottomNav active={screen} onSelect={tab} /> : <HomeIndicator />}
         </div>
         <Toast message={toastMsg} />
       </main>

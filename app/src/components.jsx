@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react';
-import { playPreview } from './audio.js';
 import backIcon from './assets/back.svg';
 import playIcon from './assets/play.svg';
 import navHome from './assets/nav-home.svg';
@@ -25,6 +24,21 @@ export function Blob({ color, left, top, size, opacity = 0.5, blur = 120 }) {
   return (
     <div className="blob" aria-hidden="true"
       style={{ left, top, width: size, height: size, opacity, background: `var(--color-accent-${color})`, filter: `blur(${blur / 2}px)` }} />
+  );
+}
+
+// Placeholder cover art: colors and angle derived from the track id, so every track looks different.
+const ART_COLORS = ['var(--color-accent-blue)', 'var(--color-accent-magenta)', 'var(--color-accent-sun)', 'var(--color-bg-navy)'];
+export function Artwork({ track, size = 52, className = '', children }) {
+  let h = 7;
+  for (const ch of track.id) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  const a = h % 4;
+  const b = (a + 1 + ((h >> 4) % 3)) % 4;
+  return (
+    <span className={`art ${className}`} aria-hidden="true"
+      style={{ width: size, height: size, backgroundImage: `linear-gradient(${(h >> 8) % 360}deg, ${ART_COLORS[a]}, ${ART_COLORS[b]})` }}>
+      {children}
+    </span>
   );
 }
 
@@ -80,6 +94,7 @@ export function Progress({ step, total }) {
 // Figma "Knob": a 270° dial. Drag up/down or use the arrow keys.
 const clamp01 = (v) => Math.min(1, Math.max(0, v));
 export function Knob({ label, value, onChange }) {
+  const pct = Math.round(value * 100);
   const drag = useRef(null);
   const onPointerDown = (e) => {
     e.currentTarget.setPointerCapture(e.pointerId);
@@ -96,7 +111,7 @@ export function Knob({ label, value, onChange }) {
   return (
     <div className="knob">
       <div className="dial" role="slider" tabIndex={0} aria-label={label}
-        aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value * 100)}
+        aria-valuemin={0} aria-valuemax={100} aria-valuenow={pct} aria-valuetext={`${pct}%`}
         onPointerDown={onPointerDown} onPointerMove={onPointerMove}
         onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}
         onKeyDown={onKeyDown}>
@@ -107,6 +122,7 @@ export function Knob({ label, value, onChange }) {
         <i className="pointer" style={{ transform: `rotate(${-135 + 270 * value}deg)` }} />
       </div>
       <span className="t-caption muted">{label}</span>
+      <span className="t-body-strong knob-value" aria-hidden="true">{pct}</span>
     </div>
   );
 }
@@ -144,7 +160,7 @@ export function Chip({ children, filled, pop, style, onClick }) {
 }
 
 // A track row: the main area plays/pauses; "⋯" (or a long press) opens More/Less like this.
-export function SongRow({ title, artist, playing, progress, onToggle, menu }) {
+export function SongRow({ track, title, artist, playing, progress, onToggle, menu }) {
   const [open, setOpen] = useState(false);
   const press = useRef(null);
   const menuRef = useRef(null);
@@ -171,9 +187,9 @@ export function SongRow({ title, artist, playing, progress, onToggle, menu }) {
     <div className="song-row">
       <button type="button" className="song-main" onClick={onMain} aria-pressed={playing}
         aria-label={`${playing ? 'Pause' : 'Play'} ${title} by ${artist.split(' · ')[0]}`} {...longPress}>
-        <span className="cover">
+        <Artwork track={track} className="cover">
           {playing && <span className="eq"><i /><i /><i /></span>}
-        </span>
+        </Artwork>
         <span className="text">
           <p className="t-body-strong">{title}</p>
           <p className="t-body muted">{artist}</p>
@@ -276,19 +292,4 @@ export function WordsSheet({ initial = '', onSubmit, onClose }) {
 export function Toast({ message }) {
   if (!message) return null;
   return <div className="toast" role="status">{message}</div>;
-}
-
-// One preview at a time per screen; stops when the screen unmounts.
-export function usePreview() {
-  const [playing, setPlaying] = useState(null);
-  const stopRef = useRef(null);
-  useEffect(() => () => stopRef.current?.(), []);
-  const toggle = (id, soundIndex) => {
-    stopRef.current?.();
-    stopRef.current = null;
-    if (playing === id) return setPlaying(null);
-    setPlaying(id);
-    stopRef.current = playPreview(soundIndex, () => setPlaying(null));
-  };
-  return { playing, toggle };
 }

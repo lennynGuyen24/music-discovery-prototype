@@ -173,3 +173,32 @@ export function whyLine(set, tags, likedTitles) {
   if (likedTitles.length) parts.push(`More like ${likedTitles[likedTitles.length - 1]}.`);
   return parts.join(' ');
 }
+
+// ---------- Catalog used outside the Node (Home, Community, Remote, Profile) ----------
+export const SNIPPETS = [
+  t('Night Swim', 'Ravyn Lenae', 'Picked for you', 92, 'Dreamy', 'Now', 0),
+  t('Glass Hour', 'Mk.gee', 'Picked for you', 86, 'Moody', 'Now', 1),
+  t('Low Sun', 'Bonobo', 'Picked for you', 98, 'Calm', '2010s', 2),
+  t('Overcast', 'Tirzah', 'Picked for you', 80, 'Moody', '2010s', 3),
+];
+
+const [nightSwim, glassHour, lowSun, overcast] = SNIPPETS;
+const byTitle = (title) => POOL.find((tr) => tr.title === title);
+
+// Remote filters each load a short queue onto the deck.
+export const DECK = {
+  All: SNIPPETS,
+  Vinyl: [glassHour, byTitle('Wet Asphalt'), byTitle('Golden Hour Hum')],
+  Samples: [lowSun, byTitle('Static Hearts'), byTitle('Afterhours')],
+  Live: [overcast, byTitle('Mirrorball Run'), byTitle('Sunday Drift')],
+};
+
+export const STATIONS = [
+  { city: 'Lisbon', x: 60, y: 30, color: 'magenta', track: t('Lisbon late show', 'Kaytranada', 'Global radio', 104, 'Hype', 'Now', 7) },
+  { city: 'Seoul', x: 190, y: 12, color: 'blue', track: t('Seoul after dark', 'Yaeji', 'Global radio', 120, 'Hype', 'Now', 6) },
+  { city: 'Lagos', x: 250, y: 60, color: 'sun', track: t('Lagos sunrise set', 'Tems', 'Global radio', 96, 'Bright', 'Now', 5) },
+  { city: 'Mexico City', x: 120, y: 76, color: 'blue', track: t('Mexico City nocturne', 'Silvana Estrada', 'Global radio', 74, 'Calm', 'Now', 4) },
+];
+
+// The Profile listening room: one record per spine.
+export const SHELF = POOL.filter((_, i) => i % 2 === 0).slice(0, 16);

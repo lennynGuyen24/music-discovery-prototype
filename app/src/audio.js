@@ -25,28 +25,37 @@ const TRACK_SOUNDS = [
   { bpm: 118, wave: 'triangle', chords: [[62, 65, 69, 72], [60, 64, 67, 71], [58, 62, 65, 69], [57, 60, 64, 67]] },
 ];
 
-/** Starts a preview. Returns a stop() function. onEnd fires when it finishes on its own. */
-export function playPreview(index, onEnd) {
+// The Remote knobs (0–1): energy opens the filter, mood shifts the key, tempo the speed.
+const cutoff = (energy) => 600 + energy * 3400;
+
+/**
+ * Starts a preview. Returns a stop() function (with .setEnergy(v) for live changes).
+ * onEnd fires when it finishes on its own. `offset` (seconds) resumes part-way through.
+ */
+export function playPreview(index, onEnd, { offset = 0, tone = { energy: 0.35, mood: 0.5, tempo: 0.5 } } = {}) {
   const ac = getCtx();
   const sound = TRACK_SOUNDS[index % TRACK_SOUNDS.length];
-  const beat = 60 / sound.bpm;
+  const beat = 60 / (sound.bpm * (0.85 + 0.3 * tone.tempo));
   const bar = beat * 4;
+  const shift = Math.round((tone.mood - 0.5) * 4);
   const start = ac.currentTime + 0.05;
-  const end = start + PREVIEW_SECONDS;
+  const base = start - offset; // where the preview would have started
+  const end = base + PREVIEW_SECONDS;
 
   const master = ac.createGain();
   master.gain.setValueAtTime(0, start);
-  master.gain.linearRampToValueAtTime(0.22, start + 0.6);
-  master.gain.setValueAtTime(0.22, end - 1.2);
+  master.gain.linearRampToValueAtTime(0.22, start + (offset ? 0.15 : 0.6));
+  master.gain.setValueAtTime(0.22, Math.max(start + 0.2, end - 1.2));
   master.gain.linearRampToValueAtTime(0, end);
 
   const filter = ac.createBiquadFilter();
   filter.type = 'lowpass';
-  filter.frequency.value = 1800;
+  filter.frequency.value = cutoff(tone.energy);
   master.connect(filter).connect(ac.destination);
 
   const nodes = [];
   const note = (freq, t, dur, gain, type) => {
+    if (t < start) return; // already played before the resume point
     const osc = ac.createOscillator();
     const g = ac.createGain();
     osc.type = type;
@@ -60,8 +69,8 @@ export function playPreview(index, onEnd) {
     nodes.push(osc);
   };
 
-  for (let t = start, i = 0; t < end; t += bar, i++) {
-    const chord = sound.chords[i % sound.chords.length];
+  for (let t = base, i = 0; t < end; t += bar, i++) {
+    const chord = sound.chords[i % sound.chords.length].map((n) => n + shift);
     chord.forEach((n) => note(midi(n), t, bar * 0.98, 0.09, 'sine')); // pad
     note(midi(chord[0] - 12), t, bar * 0.9, 0.18, 'sine'); // bass
     for (let s = 0; s < 8; s++) { // arpeggio in eighth notes
@@ -71,7 +80,7 @@ export function playPreview(index, onEnd) {
   }
 
   const timer = setTimeout(() => onEnd?.(), (end - ac.currentTime) * 1000);
-  return () => {
+  const stop = () => {
     clearTimeout(timer);
     const now = ac.currentTime;
     master.gain.cancelScheduledValues(now);
@@ -79,5 +88,7 @@ export function playPreview(index, onEnd) {
     master.gain.linearRampToValueAtTime(0, now + 0.15);
     setTimeout(() => { nodes.forEach((o) => { try { o.stop(); } catch {} }); master.disconnect(); }, 200);
   };
+  stop.setEnergy = (energy) => filter.frequency.setTargetAtTime(cutoff(energy), ac.currentTime, 0.05);
+  return stop;
 }
 
