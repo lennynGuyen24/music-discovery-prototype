@@ -237,6 +237,89 @@ export function Home({ go, tab, mailbox, toast, startNode }) {
   );
 }
 
+/* ---------- 03 Community (curated) ---------- */
+const STATIONS = [
+  { city: 'Lisbon', x: 60, y: 30, color: 'magenta', spinning: 'Kaytranada' },
+  { city: 'Seoul', x: 190, y: 12, color: 'blue', spinning: 'Yaeji' },
+  { city: 'Lagos', x: 250, y: 60, color: 'sun', spinning: 'Tems' },
+  { city: 'Mexico City', x: 120, y: 76, color: 'blue', spinning: 'Silvana Estrada' },
+];
+
+function Globe({ selected, onSelect }) {
+  return (
+    <div className="globe">
+      <svg viewBox="0 0 322 100" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+        {[60, 110, 160, 210].map((h) => <ellipse key={h} cx="161" cy="120" rx="160" ry={h / 2} />)}
+        {[40, 110, 180, 250, 320].map((w) => <ellipse key={w} cx="161" cy="110" rx={w / 2} ry="150" opacity="0.6" />)}
+      </svg>
+      {STATIONS.map((s) => (
+        <button key={s.city} type="button" className={`pin${selected === s.city ? ' on' : ''}`}
+          style={{ left: `${(s.x / 322) * 100}%`, top: s.y, '--pin': `var(--color-accent-${s.color})` }}
+          aria-pressed={selected === s.city} aria-label={`Tune in to ${s.city}`} onClick={() => onSelect(s)}>
+          <i />
+        </button>
+      ))}
+    </div>
+  );
+}
+
+export function Community({ tab, toast }) {
+  const preview = usePreview();
+  const [station, setStation] = useState(STATIONS[0]);
+  const tuned = preview.playing === station.city;
+
+  const tuneIn = (s) => {
+    setStation(s);
+    preview.toggle(s.city, STATIONS.indexOf(s));
+  };
+
+  return (
+    <>
+      <Blob color="blue" left={120} top={-140} size={440} opacity={0.5} blur={140} />
+      <Blob color="magenta" left={-180} top={360} size={380} opacity={0.35} blur={140} />
+      <div className="content gap-16" style={{ paddingBottom: 24 }}>
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <p className="t-caption muted">1,204 listening right now</p>
+          <h1 className="t-display-l" style={{ margin: 0 }}>Find your people</h1>
+        </div>
+        <section className="card panel navy">
+          <div className="section-head">
+            <p className="t-title">Global radio</p>
+            <span className="live t-caption"><i />Live</span>
+          </div>
+          <Globe selected={tuned ? station.city : null} onSelect={tuneIn} />
+          <p className="t-body muted" aria-live="polite">
+            {tuned ? `Tuned in to ${station.city} · ${station.spinning}` : `${station.city} · Someone’s spinning ${station.spinning} — tune in`}
+          </p>
+        </section>
+        <section className="card panel">
+          <div className="match">
+            <span className="avatars" aria-hidden="true"><i /><i /></span>
+            <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span className="t-caption" style={{ color: 'var(--color-accent-magenta)' }}>94% taste match</span>
+              <span className="t-title">You and Mira</span>
+            </span>
+          </div>
+          <p className="t-body muted">You both loop Jai Paul and late-night jazz after 1AM.</p>
+          <div className="chip-row">
+            <Chip filled onClick={() => toast('Messaging isn’t in this prototype yet.')}>Say hi</Chip>
+            <Chip onClick={() => toast('Record swaps open in a later version.')}>Swap a record</Chip>
+          </div>
+        </section>
+        <ListRow title="Touch tips" meta="Tap a charm" dot="sun"
+          onClick={() => toast('Touch tips need the RFID phone charm — coming with the hardware.')} />
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <p className="t-caption muted">Q&amp;A</p>
+          {[['Rainy-commute albums?', '18'], ['Underrated samples?', '42']].map(([q, n]) => (
+            <ListRow key={q} title={q} meta={n} dot="blue" onClick={() => toast('Q&A threads aren’t in this prototype yet.')} />
+          ))}
+        </div>
+      </div>
+      <BottomNav active="community" onSelect={tab} />
+    </>
+  );
+}
+
 /* ---------- 05 Node · Scanning ---------- */
 const STOP_WORDS = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'with', 'for', 'my', 'i', 'is', 'it', 'like', 'feel', 'feeling', 'some', 'someone', 'so', 'very']);
 
