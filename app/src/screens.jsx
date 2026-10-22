@@ -175,6 +175,131 @@ function MailboxSheet({ mailbox, markRead, onClose }) {
   );
 }
 
+// Snippets filed like library catalog cards. Pull a card up: past PLAY_AT the snippet starts,
+// and letting go there lifts the card out. Let go earlier and it drops back. A tap lifts it out too.
+const PLAY_AT = 56;
+const MAX_PULL = 110;
+const TAB_POS = ['6%', '38%', '66%', '20%'];
+
+// `out` is the card lifted out; the screen renders it as a CatalogCard so its scrim covers everything.
+function CatalogDrawer({ items, from, out, onLift }) {
+  const player = usePlayer();
+  const [drag, setDrag] = useState(null); // { id, y } while a card is held
+  const hold = useRef(null);
+  const skipClick = useRef(false);
+
+  const lift = (sn) => {
+    if (!player.isPlaying(sn.id)) player.play(sn, items, from);
+    onLift(sn);
+  };
+
+  const onDown = (e, sn) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    hold.current = { startY: e.clientY, sn, y: 0, moved: false, played: false };
+  };
+  const onMove = (e) => {
+    const h = hold.current;
+    if (!h) return;
+    const dy = Math.max(0, h.startY - e.clientY);
+    if (dy > 6) h.moved = true;
+    if (!h.moved) return;
+    // Past MAX_PULL the card gets heavy, like it's caught on the rod.
+    h.y = dy < MAX_PULL ? dy : MAX_PULL + (dy - MAX_PULL) * 0.15;
+    if (h.y >= PLAY_AT && !h.played) {
+      h.played = true;
+      if (!player.isPlaying(h.sn.id)) player.play(h.sn, items, from);
+      navigator.vibrate?.(8);
+    }
+    setDrag({ id: h.sn.id, y: h.y });
+  };
+  const onUp = () => {
+    const h = hold.current;
+    hold.current = null;
+    setDrag(null);
+    if (!h?.moved) return;
+    skipClick.current = true;
+    if (h.y >= PLAY_AT) lift(h.sn);
+    else if (h.played) player.pause();
+  };
+
+  return (
+    <>
+      <div className="catalog full">
+        {items.map((sn, i) => {
+          const held = drag?.id === sn.id;
+          const y = held ? drag.y : 0;
+          return (
+            <button key={sn.id} type="button"
+              className={`catalog-card${held ? ' held' : ''}${y >= PLAY_AT ? ' past-line' : ''}${out?.id === sn.id ? ' away' : ''}`}
+              style={{ '--i': i, '--pull': `${y}px`, '--p': Math.min(1, y / PLAY_AT) }}
+              aria-label={`Pull out ${sn.title} by ${sn.artist}`}
+              onPointerDown={(e) => onDown(e, sn)} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}
+              onClick={() => { if (skipClick.current) { skipClick.current = false; return; } lift(sn); }}>
+              <span className="catalog-tab" style={{ left: TAB_POS[i % TAB_POS.length] }}>{sn.title}</span>
+              <span className="catalog-face">
+                <Artwork track={sn} size={52} />
+                <span className="catalog-text">
+                  <span className="t-body-strong">{sn.title}</span>
+                  <span className="t-meta">{sn.artist}</span>
+                  <span className="t-caption catalog-cue">{y >= PLAY_AT ? '▶ Playing' : '↑ Pull to play'}</span>
+                </span>
+              </span>
+            </button>
+          );
+        })}
+        <div className="catalog-front" aria-hidden="true">
+          <span className="catalog-label">
+            <span className="t-caption">Filed under</span>
+            <span className="t-body-strong">{from}</span>
+          </span>
+          <i className="catalog-handle" />
+          <span className="t-caption muted">Pull a card up</span>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// The card lifted out of the drawer. Drag it down (or tap "File it back") to put it back.
+function CatalogCard({ track, number, onClose, onSave }) {
+  const player = usePlayer();
+  const progress = useProgress();
+  const [dy, setDy] = useState(0);
+  const start = useRef(null);
+  const playing = player.isPlaying(track.id);
+  const onDown = (e) => { e.currentTarget.setPointerCapture(e.pointerId); start.current = e.clientY; };
+  const onMove = (e) => { if (start.current != null) setDy(Math.max(0, e.clientY - start.current)); };
+  const onUp = () => { start.current = null; if (dy > 90) onClose(); else setDy(0); };
+  return (
+    <Sheet label={`${track.title} by ${track.artist}`} onClose={onClose} className="catalog-sheet">
+      <div className="catalog-sheet-body" style={{ transform: `translateY(${dy}px)` }}>
+        <div className="catalog-grab" onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onPointerCancel={onUp}>
+          <i />
+          <span className="t-caption">No. {String(number).padStart(2, '0')} · {track.mood}</span>
+          <span className="t-caption">{track.bpm} BPM · {track.era}</span>
+        </div>
+        <div className="catalog-song">
+          <Artwork track={track} size={96} />
+          <span className="catalog-text">
+            <span className="t-title">{track.title}</span>
+            <span className="t-meta">{track.artist}</span>
+          </span>
+        </div>
+        <div className="catalog-player">
+          <button type="button" className="catalog-toggle" onClick={() => player.play(track)}
+            aria-label={playing ? 'Pause snippet' : 'Play snippet'}>{playing ? '❚❚' : '▶'}</button>
+          <span className="catalog-progress"><i style={{ width: `${(player.track?.id === track.id ? progress : 0) * 100}%` }} /></span>
+        </div>
+        <div className="catalog-actions">
+          <Button onClick={onSave} soon>Add to playlist</Button>
+          <Button variant="secondary" onClick={onClose}>File it back</Button>
+        </div>
+        <i className="catalog-hole" aria-hidden="true" />
+      </div>
+    </Sheet>
+  );
+}
+
 export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) {
   const now = new Date();
   const day = now.toLocaleDateString('en-US', { weekday: 'long' });
@@ -183,7 +308,12 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
   const player = usePlayer();
   const [sheet, setSheet] = useState(false);
   const [inbox, setInbox] = useState(false);
+  const [catalogOut, setCatalogOut] = useState(null);
   const fileRef = useRef(null);
+  const fileBack = () => {
+    if (player.isPlaying(catalogOut.id)) player.pause();
+    setCatalogOut(null);
+  };
 
   // Each Node tile goes straight into its input: camera/mic scan, media opens the picker, words opens a sheet.
   const pick = (id) => {
@@ -249,24 +379,14 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
           <p className="t-caption muted">Picked for you</p>
           <button type="button" className="t-caption link soon" onClick={() => toast('The full catalogue opens in a later version.')}>See all<span className="sr-only"> (coming soon)</span></button>
         </div>
-        <div className="shelf">
-          {SNIPPETS.map((sn) => (
-            <button key={sn.id} type="button" className="snippet" aria-pressed={player.isPlaying(sn.id)}
-              aria-label={`${player.isPlaying(sn.id) ? 'Pause' : 'Play'} ${sn.title} by ${sn.artist}`}
-              onClick={() => player.play(sn, SNIPPETS, 'Picked for you')}>
-              <Artwork track={sn} size={124} className="cover">
-                {player.isPlaying(sn.id) && <span className="eq"><i /><i /><i /></span>}
-              </Artwork>
-              <span className="t-body-strong">{sn.title}</span>
-              <span className="t-meta muted">{sn.artist}</span>
-            </button>
-          ))}
-        </div>
+        <CatalogDrawer items={SNIPPETS} from="Picked for you" out={catalogOut} onLift={setCatalogOut} />
         <ListRow title={newInMailbox ? `${newInMailbox} new records in your mailbox` : 'Your group mailbox'}
           meta={newInMailbox ? 'New' : 'Open'} metaOn={newInMailbox > 0} onClick={() => setInbox(true)} />
       </div>
       {sheet && <WordsSheet onSubmit={submitWords} onClose={() => setSheet(false)} />}
       {inbox && <MailboxSheet mailbox={mailbox} markRead={markRead} onClose={() => setInbox(false)} />}
+      {catalogOut && <CatalogCard track={catalogOut} number={SNIPPETS.indexOf(catalogOut) + 1} onClose={fileBack}
+        onSave={() => toast('Saving to a playlist isn’t in this prototype yet.')} />}
     </>
   );
 }

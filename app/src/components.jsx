@@ -320,7 +320,7 @@ export function BottomNav({ active, onSelect }) {
 }
 
 // Bottom sheet dialog: Esc or the scrim closes it, focus moves in and is kept inside, then returns.
-export function Sheet({ label, onClose, children }) {
+export function Sheet({ label, onClose, className = '', children }) {
   const ref = useRef(null);
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
@@ -341,7 +341,7 @@ export function Sheet({ label, onClose, children }) {
   }, []);
   return (
     <div className="scrim" onClick={onClose}>
-      <div ref={ref} className="sheet" role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={(e) => e.stopPropagation()}>
+      <div ref={ref} className={`sheet ${className}`} role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={(e) => e.stopPropagation()}>
         {children}
       </div>
     </div>
