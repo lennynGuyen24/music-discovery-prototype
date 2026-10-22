@@ -279,6 +279,39 @@ button.list-row:active { transform: scale(0.98); }
 .avatars i { width: 44px; height: 44px; border-radius: 50%; border: 3px solid var(--color-bg-ink); background: var(--color-accent-blue); }
 .avatars i + i { margin-left: -12px; background: var(--color-accent-magenta); }
 
+/* ---------- Remote control ---------- */
+.now-playing { display: flex; align-items: center; gap: var(--space-16); }
+/* Vinyl: grooves are repeating rings, the label is the brand gradient. Spins at ~33 rpm while playing. */
+.record {
+  position: relative; flex: none; width: 150px; height: 150px; border-radius: 50%;
+  background: repeating-radial-gradient(circle, #05050d 0 8px, color-mix(in srgb, var(--color-border-subtle) 70%, transparent) 8px 9px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+.record::before { content: ''; position: absolute; inset: 47px; border-radius: 50%; background: linear-gradient(135deg, var(--color-accent-blue), var(--color-accent-magenta)); }
+.record::after { content: ''; position: absolute; left: 72px; top: 72px; width: 6px; height: 6px; border-radius: 50%; background: var(--color-bg-ink); }
+.record.spinning { animation: spin 1.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.record .sticker { position: absolute; left: 96px; top: 22px; width: 34px; height: 22px; border-radius: 6px; background: var(--color-accent-sun); transform: rotate(-18deg); }
+.deck-meta { flex: 1 0 0; min-width: 0; display: flex; flex-direction: column; gap: var(--space-4); }
+.played { display: block; height: 4px; border-radius: 2px; background: var(--color-border-subtle); overflow: hidden; margin-top: var(--space-4); }
+.played i { display: block; height: 100%; width: 0; background: var(--color-text-primary); }
+.played i.run { animation: played var(--dur) linear forwards; }
+@keyframes played { to { width: 100%; } }
+.mix { flex-direction: row; justify-content: space-between; }
+.knob { display: flex; flex-direction: column; align-items: center; gap: var(--space-8); }
+.dial {
+  position: relative; width: 72px; height: 72px; border-radius: 50%;
+  background: var(--color-surface-card); border: 1px solid var(--color-border-subtle);
+  touch-action: none; cursor: ns-resize;
+}
+.dial svg { position: absolute; inset: -1px; width: 72px; height: 72px; fill: none; stroke-width: 5; }
+.dial .track { stroke: var(--color-border-subtle); }
+.dial .level { stroke: var(--color-accent-magenta); }
+.dial .pointer { position: absolute; left: 34.5px; top: 12px; width: 3px; height: 16px; border-radius: 2px; background: var(--color-text-primary); transform-origin: 1.5px 24px; }
+.dial:focus-visible { outline: 2px solid var(--color-accent-sun); outline-offset: 2px; }
+.tools { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-12); }
+.tool { gap: var(--space-4); }
+
 /* ---------- Bottom nav (component 7:24) ---------- */
 .bottom-nav {
   height: 72px; flex: none;

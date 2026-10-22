@@ -77,6 +77,40 @@ export function Progress({ step, total }) {
   );
 }
 
+// Figma "Knob": a 270° dial. Drag up/down or use the arrow keys.
+const clamp01 = (v) => Math.min(1, Math.max(0, v));
+export function Knob({ label, value, onChange }) {
+  const drag = useRef(null);
+  const onPointerDown = (e) => {
+    e.currentTarget.setPointerCapture(e.pointerId);
+    drag.current = { y: e.clientY, v: value };
+  };
+  const onPointerMove = (e) => {
+    if (!drag.current) return;
+    onChange(clamp01(drag.current.v + (drag.current.y - e.clientY) / 150));
+  };
+  const onKeyDown = (e) => {
+    const step = { ArrowUp: 0.05, ArrowRight: 0.05, ArrowDown: -0.05, ArrowLeft: -0.05 }[e.key];
+    if (step) { e.preventDefault(); onChange(clamp01(value + step)); }
+  };
+  return (
+    <div className="knob">
+      <div className="dial" role="slider" tabIndex={0} aria-label={label}
+        aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(value * 100)}
+        onPointerDown={onPointerDown} onPointerMove={onPointerMove}
+        onPointerUp={() => { drag.current = null; }} onPointerCancel={() => { drag.current = null; }}
+        onKeyDown={onKeyDown}>
+        <svg viewBox="0 0 72 72" aria-hidden="true">
+          <circle className="track" cx="36" cy="36" r="33" pathLength="360" strokeDasharray="270 90" transform="rotate(135 36 36)" />
+          <circle className="level" cx="36" cy="36" r="33" pathLength="360" strokeDasharray={`${270 * value} 360`} transform="rotate(135 36 36)" />
+        </svg>
+        <i className="pointer" style={{ transform: `rotate(${-135 + 270 * value}deg)` }} />
+      </div>
+      <span className="t-caption muted">{label}</span>
+    </div>
+  );
+}
+
 export function HomeIndicator() {
   return <div className="home-indicator" aria-hidden="true"><span /></div>;
 }

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Blob, BottomNav, Button, Chip, Glow, Icon, ListRow, Progress, SongRow, TopBar, usePreview } from './components.jsx';
+import { Blob, BottomNav, Button, Chip, Glow, Icon, Knob, ListRow, Progress, SongRow, TopBar, usePreview } from './components.jsx';
 import { playPreview, PREVIEW_SECONDS } from './audio.js';
 
 import iconCamera from './assets/icon-camera.svg';
@@ -316,6 +316,90 @@ export function Community({ tab, toast }) {
         </div>
       </div>
       <BottomNav active="community" onSelect={tab} />
+    </>
+  );
+}
+
+/* ---------- 04 Remote Control (curated) ---------- */
+// Each filter loads a different record onto the deck.
+const DECK = {
+  All: { title: 'Night Swim', artist: 'Ravyn Lenae', side: 'Side A · 2 of 6', sound: 0 },
+  Vinyl: { title: 'Glass Hour', artist: 'Mk.gee', side: 'Side B · 1 of 5', sound: 1 },
+  Samples: { title: 'Low Sun', artist: 'Bonobo', side: 'Sample pack · 4 of 9', sound: 2 },
+  Live: { title: 'Overcast', artist: 'Tirzah', side: 'Live set · 3 of 7', sound: 3 },
+};
+
+export function Remote({ tab, toast }) {
+  const preview = usePreview();
+  const [filter, setFilter] = useState('All');
+  const [plays, setPlays] = useState(0);
+  const [mix, setMix] = useState({ Energy: 0.7, Mood: 0.45, Tempo: 0.6 });
+  const [labels, setLabels] = useState(['Late night']);
+  const track = DECK[filter];
+  const playing = preview.playing === track.title;
+
+  const togglePlay = () => {
+    if (!playing) setPlays((n) => n + 1);
+    preview.toggle(track.title, track.sound);
+  };
+  const choose = (f) => {
+    if (playing) preview.toggle(track.title, track.sound); // stop the old record
+    setFilter(f);
+  };
+  const toggleLabel = (l) => setLabels((ls) => (ls.includes(l) ? ls.filter((x) => x !== l) : [...ls, l]));
+
+  return (
+    <>
+      <Blob color="magenta" left={0} top={140} size={400} opacity={0.45} blur={140} />
+      <Blob color="blue" left={120} top={40} size={300} opacity={0.5} blur={120} />
+      <div className="content gap-16" style={{ paddingBottom: 24 }}>
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <p className="t-caption muted">Remote · Living room speaker</p>
+          <h1 className="t-display-l" style={{ margin: 0 }}>Now playing</h1>
+        </div>
+        <div className="chip-row" role="group" aria-label="Filter">
+          {Object.keys(DECK).map((f) => <Chip key={f} filled={filter === f} onClick={() => choose(f)}>{f}</Chip>)}
+        </div>
+        <div className="now-playing full">
+          <button type="button" className={`record${playing ? ' spinning' : ''}`} onClick={togglePlay}
+            aria-label={`${playing ? 'Stop' : 'Play'} ${track.title}`} aria-pressed={playing}>
+            <span className="sticker" aria-hidden="true" />
+          </button>
+          <div className="deck-meta">
+            <p className="t-caption muted">{track.side}</p>
+            <p className="t-title">{track.title}</p>
+            <p className="t-body muted">{track.artist}</p>
+            <span className="played">
+              <i key={`${filter}-${plays}`} className={playing ? 'run' : ''} style={{ '--dur': `${PREVIEW_SECONDS}s` }} />
+            </span>
+          </div>
+        </div>
+        <div className="card panel mix">
+          {Object.entries(mix).map(([k, v]) => (
+            <Knob key={k} label={k} value={v} onChange={(nv) => setMix((m) => ({ ...m, [k]: nv }))} />
+          ))}
+        </div>
+        <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <p className="t-caption muted">Label this track</p>
+          <div className="chip-row">
+            {['Late night', 'Driving'].map((l) => <Chip key={l} filled={labels.includes(l)} onClick={() => toggleLabel(l)}>{l}</Chip>)}
+            <Chip onClick={() => toast('Custom labels arrive in a later version.')}>+ Add</Chip>
+          </div>
+        </div>
+        <div className="tools full">
+          <button type="button" className="card panel navy tool" style={{ borderColor: 'color-mix(in srgb, var(--color-accent-magenta) 60%, transparent)' }}
+            onClick={() => toast('Sample finder is coming — it will show what this track is built on.')}>
+            <span className="t-body-strong">Sample finder</span>
+            <span className="t-caption muted">Hear what this track is built on →</span>
+          </button>
+          <button type="button" className="card panel navy tool" style={{ borderColor: 'color-mix(in srgb, var(--color-accent-sun) 60%, transparent)' }}
+            onClick={() => toast('Friends’ stickers open in a later version.')}>
+            <span className="t-body-strong">Stickers</span>
+            <span className="t-caption muted">3 left on this record by friends →</span>
+          </button>
+        </div>
+      </div>
+      <BottomNav active="remote" onSelect={tab} />
     </>
   );
 }

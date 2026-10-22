@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { HomeIndicator, StatusBar, Toast } from './components.jsx';
-import { Community, ConnectApps, Home, PickVibes, Results, Scanning, Welcome } from './screens.jsx';
+import { Community, ConnectApps, Home, PickVibes, Remote, Results, Scanning, Welcome } from './screens.jsx';
 
 const SCREENS = {
   welcome: Welcome,
@@ -8,6 +8,7 @@ const SCREENS = {
   vibes: PickVibes,
   home: Home,
   community: Community,
+  remote: Remote,
   scanning: Scanning,
   results: Results,
 };
