@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { Blob, BottomNav, Button, Chip, Glow, Icon, Knob, ListRow, Progress, SongRow, TopBar, usePreview } from './components.jsx';
+import { Blob, BottomNav, Button, Chip, Glow, Icon, Knob, ListRow, Progress, SongRow, TopBar, usePreview, WordsSheet } from './components.jsx';
 import { playPreview, PREVIEW_SECONDS } from './audio.js';
-import { detectedWords, inputLabels, matchSet, resultTitle } from './data.js';
+import { detectedWords, inputLabels, matchSet, rankTracks, resultTitle, TAG_OPTIONS, whyLine } from './data.js';
 
 import iconCamera from './assets/icon-camera.svg';
 import iconMic from './assets/icon-mic.svg';
@@ -156,7 +156,6 @@ export function Home({ go, tab, mailbox, toast, startNode }) {
   const greeting = h < 12 ? 'Good morning' : h < 18 ? 'Good afternoon' : 'Good evening';
   const preview = usePreview();
   const [sheet, setSheet] = useState(false);
-  const [words, setWords] = useState('');
   const fileRef = useRef(null);
 
   // Each Node tile goes straight into its input: camera/mic scan, media opens the picker, words opens a sheet.
@@ -172,9 +171,8 @@ export function Home({ go, tab, mailbox, toast, startNode }) {
     startNode({ mode: 'media', url: URL.createObjectURL(file), isVideo: file.type.startsWith('video') });
     go('scanning');
   };
-  const submitWords = () => {
-    if (!words.trim()) return;
-    startNode({ mode: 'words', text: words.trim() });
+  const submitWords = (text) => {
+    startNode({ mode: 'words', text });
     go('scanning');
   };
 
@@ -230,18 +228,7 @@ export function Home({ go, tab, mailbox, toast, startNode }) {
           onClick={() => toast(`${mailbox} records waiting — the mailbox opens in a later version.`)} />
       </div>
       <BottomNav active="home" onSelect={tab} />
-      {sheet && (
-        <div className="scrim" onClick={() => setSheet(false)}>
-          <div className="sheet" role="dialog" aria-label="Describe your vibe" onClick={(e) => e.stopPropagation()}>
-            <p className="t-caption muted">Words</p>
-            <p className="t-title">Describe the feeling</p>
-            <textarea autoFocus value={words} onChange={(e) => setWords(e.target.value)}
-              placeholder="rainy rooftop, missing someone"
-              onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitWords(); } }} />
-            <Button onClick={submitWords} disabled={!words.trim()}>Feed the Node</Button>
-          </div>
-        </div>
-      )}
+      {sheet && <WordsSheet onSubmit={submitWords} onClose={() => setSheet(false)} />}
     </>
   );
 }
@@ -560,10 +547,32 @@ export function Scanning({ go, back, node }) {
 }
 
 /* ---------- 06 Node · Results ---------- */
-export function Results({ back, node, toast, dropInMailbox, home }) {
+const TAG_KINDS = { tempo: 'Tempo', mood: 'Mood', era: 'Era' };
+
+// A result tag: tap the label to swap it for the next option, × to drop it.
+function TagChip({ kind, value, onSwap, onRemove, onAdd }) {
+  if (!value) {
+    return <button type="button" className="tag-chip add t-caption" onClick={onAdd}>+ {TAG_KINDS[kind]}</button>;
+  }
+  return (
+    <span className="tag-chip t-caption">
+      <button type="button" onClick={onSwap} aria-label={`${TAG_KINDS[kind]}: ${value}. Tap to change`}>{value}</button>
+      <button type="button" className="x" onClick={onRemove} aria-label={`Remove ${value}`}>×</button>
+    </span>
+  );
+}
+
+export function Results({ go, back, node, startNode, toast, dropInMailbox, home }) {
   const set = matchSet(node);
   const title = resultTitle(node);
-  const tracks = set.tracks.slice(0, 4);
+  const [tags, setTags] = useState(set.tags);
+  const [liked, setLiked] = useState([]);
+  const [hidden, setHidden] = useState([]);
+  const [seed, setSeed] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const tracks = rankTracks(set, tags, { liked, hidden, seed });
+  const likedTitles = tracks.filter((t) => liked.includes(t.id)).map((t) => t.title);
+
   const [playing, setPlaying] = useState(null);
   const [progress, setProgress] = useState(0);
   const [saved, setSaved] = useState(false);
@@ -592,6 +601,24 @@ export function Results({ back, node, toast, dropInMailbox, home }) {
     setPlaying(track.id);
   };
 
+  const swapTag = (kind) => setTags((tg) => {
+    const opts = TAG_OPTIONS[kind];
+    return { ...tg, [kind]: opts[(opts.indexOf(tg[kind]) + 1) % opts.length] };
+  });
+  const setTag = (kind, value) => setTags((tg) => ({ ...tg, [kind]: value }));
+  const moreLike = (t) => { setLiked((l) => [...l.filter((x) => x !== t.id), t.id]); toast(`More like “${t.title}” coming up.`); };
+  const lessLike = (t) => {
+    if (playing === t.id) toggle(t);
+    setHidden((h) => [...h, t.id]);
+    toast(`Got it — less like “${t.title}”.`);
+  };
+  const editInput = (text) => {
+    stopRef.current?.();
+    setEditing(false);
+    startNode({ mode: 'words', text });
+    go('scanning');
+  };
+
   const leave = (fn) => { stopRef.current?.(); fn(); };
   const [a1, a2] = set.accents;
 
@@ -604,14 +631,23 @@ export function Results({ back, node, toast, dropInMailbox, home }) {
         <p className="t-caption muted">Your vibe sounds like</p>
         <h1 className="t-display-xl full" style={{ margin: 0 }}>{title}</h1>
         {node?.mode === 'words' && <p className="t-body muted full">“{node.text}” · {set.name}</p>}
-        <div className="chip-row">
-          {Object.values(set.tags).map((tag, i) => <Chip key={tag} filled={i === 0}>{tag}</Chip>)}
+        <div className="chip-row" role="group" aria-label="Tune the results">
+          {Object.keys(TAG_KINDS).map((k) => (
+            <TagChip key={k} kind={k} value={tags[k]} onSwap={() => swapTag(k)}
+              onRemove={() => setTag(k, null)} onAdd={() => setTag(k, set.tags[k])} />
+          ))}
         </div>
-        <div className="tracks">
+        <div className="tracks" aria-live="polite">
           {tracks.map((t) => (
             <SongRow key={t.id} title={t.title} artist={`${t.artist} · ${t.note.toLowerCase()}`}
-              playing={playing === t.id} progress={progress} onToggle={() => toggle(t)} />
+              playing={playing === t.id} progress={progress} onToggle={() => toggle(t)}
+              menu={[{ label: 'More like this', onSelect: () => moreLike(t) }, { label: 'Less like this', onSelect: () => lessLike(t) }]} />
           ))}
+        </div>
+        <p className="t-body muted full why"><span className="t-body-strong">Why these picks · </span>{whyLine(set, tags, likedTitles)}</p>
+        <div className="refine full">
+          <Button variant="secondary" onClick={() => setSeed((n) => n + 1)}>↻ Regenerate</Button>
+          <Button variant="secondary" onClick={() => setEditing(true)}>✎ Edit input</Button>
         </div>
         <div className="spacer" />
         <Button onClick={() => { setSaved(true); toast(`Saved “${title}” to your library.`); }} disabled={saved}>
@@ -621,6 +657,7 @@ export function Results({ back, node, toast, dropInMailbox, home }) {
           Drop in the group mailbox
         </Button>
       </div>
+      {editing && <WordsSheet initial={node?.mode === 'words' ? node.text : ''} onSubmit={editInput} onClose={() => setEditing(false)} />}
     </>
   );
 }

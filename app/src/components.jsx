@@ -143,24 +143,62 @@ export function Chip({ children, filled, pop, style, onClick }) {
   return <span className={className} style={style}>{children}</span>;
 }
 
-export function SongRow({ title, artist, playing, progress, onToggle }) {
+// A track row: the main area plays/pauses; "⋯" (or a long press) opens More/Less like this.
+export function SongRow({ title, artist, playing, progress, onToggle, menu }) {
+  const [open, setOpen] = useState(false);
+  const press = useRef(null);
+  const menuRef = useRef(null);
+  useEffect(() => {
+    if (!open) return;
+    menuRef.current?.querySelector('button')?.focus();
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    const onDown = (e) => { if (!menuRef.current?.contains(e.target)) setOpen(false); };
+    document.addEventListener('keydown', onKey);
+    document.addEventListener('pointerdown', onDown);
+    return () => { document.removeEventListener('keydown', onKey); document.removeEventListener('pointerdown', onDown); };
+  }, [open]);
+  const longPress = menu && {
+    onPointerDown: () => { press.current = setTimeout(() => { press.current = 'fired'; setOpen(true); }, 500); },
+    onPointerUp: () => { if (press.current !== 'fired') clearTimeout(press.current); },
+    onPointerLeave: () => { if (press.current !== 'fired') clearTimeout(press.current); },
+    onContextMenu: (e) => { e.preventDefault(); setOpen(true); },
+  };
+  const onMain = () => {
+    if (press.current === 'fired') { press.current = null; return; } // the long press opened the menu
+    onToggle();
+  };
   return (
-    <button type="button" className="song-row" onClick={onToggle} aria-pressed={playing}
-      aria-label={`${playing ? 'Pause' : 'Play'} ${title} by ${artist.split(' · ')[0]}`}>
-      <span className="cover">
-        {playing && <span className="eq"><i /><i /><i /></span>}
-      </span>
-      <span className="text">
-        <p className="t-body-strong">{title}</p>
-        <p className="t-body muted">{artist}</p>
-        {playing && <span className="progress"><i style={{ width: `${progress * 100}%` }} /></span>}
-      </span>
-      <span className="play-btn">
-        {playing
-          ? <span className="pause-icon"><i /><i /></span>
-          : <img src={playIcon} alt="" />}
-      </span>
-    </button>
+    <div className="song-row">
+      <button type="button" className="song-main" onClick={onMain} aria-pressed={playing}
+        aria-label={`${playing ? 'Pause' : 'Play'} ${title} by ${artist.split(' · ')[0]}`} {...longPress}>
+        <span className="cover">
+          {playing && <span className="eq"><i /><i /><i /></span>}
+        </span>
+        <span className="text">
+          <p className="t-body-strong">{title}</p>
+          <p className="t-body muted">{artist}</p>
+          {playing && <span className="progress"><i style={{ width: `${progress * 100}%` }} /></span>}
+        </span>
+        <span className="play-btn">
+          {playing
+            ? <span className="pause-icon"><i /><i /></span>
+            : <img src={playIcon} alt="" />}
+        </span>
+      </button>
+      {menu && (
+        <div className="more" ref={menuRef}>
+          <button type="button" className="more-btn" aria-label={`More options for ${title}`} aria-expanded={open}
+            aria-haspopup="menu" onClick={() => setOpen((o) => !o)}>⋯</button>
+          {open && (
+            <div className="menu" role="menu">
+              {menu.map((item) => (
+                <button key={item.label} type="button" role="menuitem" onClick={() => { setOpen(false); item.onSelect(); }}>{item.label}</button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -187,6 +225,51 @@ export function BottomNav({ active, onSelect }) {
         </button>
       ))}
     </nav>
+  );
+}
+
+// Bottom sheet dialog: Esc or the scrim closes it, focus moves in and is kept inside, then returns.
+export function Sheet({ label, onClose, children }) {
+  const ref = useRef(null);
+  const closeRef = useRef(onClose);
+  closeRef.current = onClose;
+  useEffect(() => {
+    const prev = document.activeElement;
+    const el = ref.current;
+    (el.querySelector('textarea, input, button') ?? el).focus();
+    const onKey = (e) => {
+      if (e.key === 'Escape') { e.stopPropagation(); closeRef.current(); }
+      if (e.key !== 'Tab') return;
+      const items = [...el.querySelectorAll('button:not([disabled]), textarea, input, [tabindex="0"]')];
+      const first = items[0], last = items[items.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    };
+    document.addEventListener('keydown', onKey);
+    return () => { document.removeEventListener('keydown', onKey); prev?.focus?.(); };
+  }, []);
+  return (
+    <div className="scrim" onClick={onClose}>
+      <div ref={ref} className="sheet" role="dialog" aria-modal="true" aria-label={label} tabIndex={-1} onClick={(e) => e.stopPropagation()}>
+        {children}
+      </div>
+    </div>
+  );
+}
+
+// The Node's Words input. Also reopened from Results ("Edit input") with the text filled in.
+export function WordsSheet({ initial = '', onSubmit, onClose }) {
+  const [words, setWords] = useState(initial);
+  const submit = () => { if (words.trim()) onSubmit(words.trim()); };
+  return (
+    <Sheet label="Describe your vibe" onClose={onClose}>
+      <p className="t-caption muted">Words</p>
+      <p className="t-title">Describe the feeling</p>
+      <textarea value={words} onChange={(e) => setWords(e.target.value)} aria-label="Describe the feeling"
+        placeholder="rainy rooftop, missing someone"
+        onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(); } }} />
+      <Button onClick={submit} disabled={!words.trim()}>Feed the Node</Button>
+    </Sheet>
   );
 }
 

@@ -35,7 +35,8 @@ export default function App() {
   const go = useCallback((id) => {
     setDirection('forward');
     // Scanning is a transient step: Results' back button returns to where the Node started.
-    setStack((s) => [...s.filter((x) => x !== 'scanning'), id]);
+    // Starting a new scan (e.g. "Edit input") replaces the old results instead of stacking them.
+    setStack((s) => [...s.filter((x) => x !== 'scanning' && !(id === 'scanning' && x === 'results')), id]);
   }, []);
   const back = useCallback(() => {
     setDirection('back');

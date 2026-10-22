@@ -135,3 +135,41 @@ export function inputLabels(node) {
     default: return { bar: 'Scan', doing: 'Scanning…' };
   }
 }
+
+// Ranks tracks for the Results screen. Tags pull the list toward a tempo/mood/era,
+// "More like this" boosts that track's mood, "Less like this" hides it,
+// and Regenerate (seed) reshuffles near-ties. Tracks from other sets can come in
+// when the tags move away from the matched set.
+const POOL = ALL_SETS.flatMap((s) => s.tracks.map((tr) => ({ ...tr, setId: s.id })));
+const jitter = (id, seed) => {
+  let h = seed * 7919;
+  for (const ch of id) h = (h * 31 + ch.charCodeAt(0)) % 100003;
+  return (h % 1000) / 1000;
+};
+
+export function rankTracks(set, tags, { liked = [], hidden = [], seed = 0 } = {}) {
+  const likedMoods = POOL.filter((tr) => liked.includes(tr.id)).map((tr) => tr.mood);
+  const bpm = tags.tempo ? parseInt(tags.tempo, 10) : null;
+  const score = (tr) =>
+    (tr.setId === set.id ? 1.5 : 0)
+    + (bpm ? Math.max(0, 2.5 - Math.abs(tr.bpm - bpm) / 10) : 0)
+    + (tags.mood && tr.mood === tags.mood ? 2 : 0)
+    + (tags.era && tr.era === tags.era ? 1 : 0)
+    + (likedMoods.includes(tr.mood) ? 1.5 : 0)
+    + (liked.includes(tr.id) ? 10 : 0)
+    + (seed ? jitter(tr.id, seed) * 3 : 0);
+  return POOL.filter((tr) => !hidden.includes(tr.id))
+    .map((tr) => ({ tr, s: score(tr) }))
+    .sort((a, b) => b.s - a.s)
+    .slice(0, 4)
+    .map(({ tr }) => tr);
+}
+
+// One line under the list explaining the picks.
+export function whyLine(set, tags, likedTitles) {
+  const tuned = Object.entries(tags).filter(([k, v]) => v && v !== set.tags[k]).map(([, v]) => v);
+  const parts = [set.why];
+  if (tuned.length) parts.push(`Tuned toward ${tuned.join(' · ')}.`);
+  if (likedTitles.length) parts.push(`More like ${likedTitles[likedTitles.length - 1]}.`);
+  return parts.join(' ');
+}
