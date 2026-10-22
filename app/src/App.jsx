@@ -88,45 +88,53 @@ function Shell() {
 
   return (
     <div className="stage">
-      <main className="device" style={scale < 1 ? { zoom: scale } : undefined}>
-        <div key={stack.length + screen} className={`screen ${screen === 'scanning' ? 'scanning ' : ''}enter-${direction}`}>
-          <StatusBar />
-          <Screen
-            go={go}
-            back={back}
-            home={home}
-            tab={tab}
-            returnTo={returnTo}
-            toast={toast}
-            connected={connected}
-            setConnected={setConnected}
-            vibes={vibes}
-            setVibes={setVibes}
-            node={node}
-            permissions={permissions}
-            allowDevice={(kind) => setPermissions((p) => ({ ...p, [kind]: true }))}
-            startNode={setNode}
-            mailbox={mailbox}
-            newInMailbox={newInMailbox}
-            drop={drop}
-            undrop={undrop}
-            markRead={markRead}
-          />
-          {/* The dock holds the bottom chrome; toasts sit just above it so they never cover the mini-player or tabs. */}
-          <div className="dock">
-            <Toast message={toastMsg?.message} action={toastMsg?.action} onAction={runToastAction} />
-            {!NO_MINI.includes(screen) && <MiniPlayer onOpen={() => tab('remote')} />}
-            {TABS.includes(screen) ? <BottomNav active={screen} onSelect={tab} /> : <HomeIndicator />}
+      <div className="device-fit" style={{ width: DEVICE.w * scale, height: DEVICE.h * scale }}>
+        <main className="device" style={{ transform: scale < 1 ? `scale(${scale})` : undefined }}>
+          <div key={stack.length + screen} className={`screen ${screen === 'scanning' ? 'scanning ' : ''}enter-${direction}`}>
+            <StatusBar />
+            <Screen
+              go={go}
+              back={back}
+              home={home}
+              tab={tab}
+              returnTo={returnTo}
+              toast={toast}
+              connected={connected}
+              setConnected={setConnected}
+              vibes={vibes}
+              setVibes={setVibes}
+              node={node}
+              permissions={permissions}
+              allowDevice={(kind) => setPermissions((p) => ({ ...p, [kind]: true }))}
+              startNode={setNode}
+              mailbox={mailbox}
+              newInMailbox={newInMailbox}
+              drop={drop}
+              undrop={undrop}
+              markRead={markRead}
+            />
+            {/* The dock holds the bottom chrome; toasts sit just above it so they never cover the mini-player or tabs. */}
+            <div className="dock">
+              <Toast message={toastMsg?.message} action={toastMsg?.action} onAction={runToastAction} />
+              {!NO_MINI.includes(screen) && <MiniPlayer onOpen={() => tab('remote')} />}
+              {TABS.includes(screen) ? <BottomNav active={screen} onSelect={tab} /> : <HomeIndicator />}
+            </div>
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 }
 
-// Shrinks the phone frame to fit short desktop windows (phones get the full-screen layout instead).
+// Matches --device-w / --device-h (the Figma frame size). The ring shadow adds 10px on each side.
+const DEVICE = { w: 402, h: 874 };
+const FULL_BLEED = 430;
+
+// Scales the whole phone frame to fit the window, so its layout stays 402px wide inside.
+// At 430px and below, phones get the full-screen layout instead.
 function useFitScale() {
-  const calc = () => (window.innerWidth <= 500 ? 1 : Math.min(1, (window.innerHeight - 48) / 894, (window.innerWidth - 48) / 422));
+  const calc = () => (window.innerWidth <= FULL_BLEED ? 1
+    : Math.min(1, (window.innerHeight - 48 - 20) / DEVICE.h, (window.innerWidth - 48 - 20) / DEVICE.w));
   const [scale, setScale] = useState(calc);
   useEffect(() => {
     const onResize = () => setScale(calc());
