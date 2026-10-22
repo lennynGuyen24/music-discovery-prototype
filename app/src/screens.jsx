@@ -30,7 +30,7 @@ export function Welcome({ go, toast }) {
         <div className="spacer" />
         <Progress step={1} total={3} />
         <p className="t-caption muted">Step 1 of 3 · Welcome</p>
-        <h1 className="t-display-xl full" style={{ margin: 0 }}>Find the thread to your taste</h1>
+        <h1 className="t-heading full" style={{ margin: 0 }}>Find the thread to your taste</h1>
         <p className="t-body muted full">Turn a place, a photo, a feeling or a few words into music you haven’t heard yet.</p>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <Button onClick={() => go('connect')}>Get started</Button>
@@ -76,7 +76,7 @@ export function ConnectApps({ go, back, returnTo, connected, setConnected }) {
             <p className="t-caption muted">Step 2 of 3 · Onboarding</p>
           </>
         )}
-        <h1 className="t-display-xl full" style={{ margin: 0 }}>Plug in your sound</h1>
+        <h1 className="t-heading full" style={{ margin: 0 }}>Plug in your sound</h1>
         <p className="t-body muted full">Connect the apps you already listen on. <strong className="t-body-strong" style={{ color: 'var(--color-text-primary)' }}>The Node</strong> — the part of the app that turns a place, a sound, a photo or a feeling into music — learns your taste from them. Nothing gets posted without asking.</p>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {SERVICES.map(({ name, dot }) => {
@@ -120,7 +120,7 @@ export function PickVibes({ tab, back, returnTo, vibes, setVibes }) {
             <p className="t-caption muted">Step 3 of 3 · Onboarding</p>
           </>
         )}
-        <h1 className="t-display-xl full" style={{ margin: 0 }}>Pick your vibes</h1>
+        <h1 className="t-heading full" style={{ margin: 0 }}>Pick your vibes</h1>
         <p className="t-body muted full">Pick at least {MIN_VIBES}. The Node uses them for your first daily prompt — change them any time in Profile.</p>
         {Object.entries(VIBES).map(([group, list]) => (
           <div key={group} className="full" role="group" aria-labelledby={`vibes-${group}`} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -210,8 +210,8 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
       <div className="content gap-16" style={{ paddingBottom: 24 }}>
         <div className="home-head full">
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            <p className="t-caption muted">{day} · {greeting}, Lan</p>
-            <h1 className="t-display-l" style={{ margin: 0 }}>What’s your vibe?</h1>
+            <p className="t-meta muted">{day} · {greeting}, Lan</p>
+            <h1 className="t-heading" style={{ margin: 0 }}>What’s your vibe?</h1>
           </div>
           <button type="button" className="inbox-btn" onClick={() => setInbox(true)}
             aria-label={`Group mailbox${newInMailbox ? `, ${newInMailbox} new` : ''}`}>
@@ -242,7 +242,7 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
           <p className="t-body-strong">“A song for a 2AM drive with the windows down”</p>
           <span className="answers">
             <span className="faces" aria-hidden="true"><i /><i /><i /></span>
-            <span className="t-caption muted">6 of 9 answered · Add yours →</span>
+            <span className="t-meta muted">6 of 9 answered · Add yours →</span>
           </span>
         </button>
         <div className="section-head full">
@@ -258,7 +258,7 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
                 {player.isPlaying(sn.id) && <span className="eq"><i /><i /><i /></span>}
               </Artwork>
               <span className="t-body-strong">{sn.title}</span>
-              <span className="t-caption muted">{sn.artist}</span>
+              <span className="t-meta muted">{sn.artist}</span>
             </button>
           ))}
         </div>
@@ -306,8 +306,8 @@ export function Community({ toast }) {
       <Blob color="magenta" left={-180} top={360} size={380} opacity={0.35} blur={140} />
       <div className="content gap-16" style={{ paddingBottom: 24 }}>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <p className="t-caption muted">1,204 listening right now</p>
-          <h1 className="t-display-l" style={{ margin: 0 }}>Find your people</h1>
+          <p className="t-meta muted">1,204 listening right now</p>
+          <h1 className="t-heading" style={{ margin: 0 }}>Find your people</h1>
         </div>
         <section className="card panel navy">
           <div className="section-head">
@@ -366,7 +366,7 @@ export function Remote({ toast }) {
       <div className="content gap-16" style={{ paddingBottom: 24 }}>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
           <p className="t-caption muted">Remote · Living room speaker</p>
-          <h1 className="t-display-l" style={{ margin: 0 }}>Now playing</h1>
+          <h1 className="t-heading" style={{ margin: 0 }}>Now playing</h1>
         </div>
         <Segmented label="Filter the deck" options={Object.keys(DECK)} value={filter} onChange={choose} />
         <div className="now-playing full">
@@ -375,7 +375,7 @@ export function Remote({ toast }) {
             <span className="sticker" aria-hidden="true" />
           </button>
           <div className="deck-meta">
-            <p className="t-caption muted">{player.source || 'Queue'} · {player.index + 1} of {player.queue.length || 1}</p>
+            <p className="t-meta muted">{player.source || 'Queue'} · {player.index + 1} of {player.queue.length || 1}</p>
             <p className="t-title">{track.title}</p>
             <p className="t-body muted">{track.artist}</p>
             <span className="played"><i style={{ width: `${progress * 100}%` }} /></span>
@@ -438,7 +438,7 @@ export function Profile({ go, toast, connected, vibes }) {
           <span className="avatar" aria-hidden="true" />
           <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
             <h1 className="t-title" style={{ margin: 0 }}>Lan Nguyen</h1>
-            <span className="t-caption muted">@lan · Studio crew</span>
+            <span className="t-meta muted">@lan · Studio crew</span>
           </span>
         </div>
         <section className="card persona">
@@ -464,7 +464,7 @@ export function Profile({ go, toast, connected, vibes }) {
                 onClick={() => player.play(tr, SHELF, 'Listening room')} />
             ))}
           </div>
-          <p className="t-caption muted">The record on the table plays whatever you’re on right now.</p>
+          <p className="t-meta muted">The record on the table plays whatever you’re on right now.</p>
         </section>
         <div className="full" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <ListRow title="Connect music apps" meta={`${connected.length} linked`} dot="blue" onClick={() => go('connect')} />
@@ -635,7 +635,7 @@ function DropSheet({ title, onConfirm, onClose }) {
           <label key={c.id} className="crew">
             <input type="checkbox" checked={crews.includes(c.name)} onChange={() => toggle(c.name)} />
             <span className="t-body-strong">{c.name}</span>
-            <span className="t-caption muted">{c.members} people</span>
+            <span className="t-meta muted">{c.members} people</span>
           </label>
         ))}
       </div>
@@ -697,7 +697,7 @@ export function Results({ go, back, tab, node, startNode, toast, drop, undrop })
       <TopBar title="Your Node" onBack={back} />
       <div className="content gap-16">
         <p className="t-caption muted">Your vibe sounds like</p>
-        <h1 className="t-display-xl full" style={{ margin: 0 }}>{title}</h1>
+        <h1 className="t-display-l full" style={{ margin: 0 }}>{title}</h1>
         {node?.mode === 'words' && <p className="t-body muted full">“{node.text}” · {set.name}</p>}
         <div className="chip-row" role="group" aria-label="Tune the results">
           {Object.keys(TAG_KINDS).map((k) => (

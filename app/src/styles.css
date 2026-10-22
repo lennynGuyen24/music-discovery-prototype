@@ -43,12 +43,15 @@ button:focus-visible, textarea:focus-visible { outline: 2px solid var(--color-ac
 p { margin: 0; }
 
 /* ---------- Typography (Figma text styles) ---------- */
-.t-caption { font: 500 11px/1.3 var(--font-body); letter-spacing: 0.88px; text-transform: uppercase; }
+/* Uppercase only for short category labels; names and descriptions use sentence-case .t-meta. Nothing below 12px. */
+.t-caption { font: 500 12px/1.3 var(--font-body); letter-spacing: 0.72px; text-transform: uppercase; }
+.t-meta { font: 500 13px/1.35 var(--font-body); }
 .t-body { font: 400 15px/1.4 var(--font-body); }
 .t-body-strong { font: 600 15px/1.4 var(--font-body); }
 .t-title { font: 700 17px/1.2 var(--font-display); }
+/* Screen titles. The 28px black uppercase style (.t-display-l) is kept for Node result titles and the persona card. */
+.t-heading { font: 700 24px/1.15 var(--font-display); letter-spacing: -0.24px; }
 .t-display-l { font: 900 28px/1.05 var(--font-display); letter-spacing: -0.28px; text-transform: uppercase; }
-.t-display-xl { font: 900 44px/1 var(--font-display); letter-spacing: -0.88px; text-transform: uppercase; }
 .muted { color: var(--color-text-muted); }
 
 /* ---------- Device frame ---------- */
