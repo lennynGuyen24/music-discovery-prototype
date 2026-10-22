@@ -112,10 +112,13 @@ function Shell() {
             undrop={undrop}
             markRead={markRead}
           />
-          {!NO_MINI.includes(screen) && <MiniPlayer onOpen={() => tab('remote')} />}
-          {TABS.includes(screen) ? <BottomNav active={screen} onSelect={tab} /> : <HomeIndicator />}
+          {/* The dock holds the bottom chrome; toasts sit just above it so they never cover the mini-player or tabs. */}
+          <div className="dock">
+            <Toast message={toastMsg?.message} action={toastMsg?.action} onAction={runToastAction} />
+            {!NO_MINI.includes(screen) && <MiniPlayer onOpen={() => tab('remote')} />}
+            {TABS.includes(screen) ? <BottomNav active={screen} onSelect={tab} /> : <HomeIndicator />}
+          </div>
         </div>
-        <Toast message={toastMsg?.message} action={toastMsg?.action} onAction={runToastAction} />
       </main>
     </div>
   );

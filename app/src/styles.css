@@ -528,8 +528,9 @@ button.list-row:active { transform: scale(0.98); }
   font: 400 15px/1.4 var(--font-body);
 }
 .sheet textarea::placeholder { color: var(--color-text-muted); }
+.dock { position: relative; z-index: 3; flex: none; }
 .toast {
-  position: absolute; left: 24px; right: 24px; bottom: 96px; z-index: 20;
+  position: absolute; left: var(--space-16); right: var(--space-16); bottom: calc(100% + var(--space-8)); z-index: 20;
   padding: 14px 18px; border-radius: var(--radius-md);
   background: var(--color-accent-sun); color: var(--color-text-on-light);
   font: 600 14px/1.35 var(--font-body);
@@ -550,5 +551,4 @@ button.list-row:active { transform: scale(0.98); }
   .home-indicator { display: none !important; }
   .content { padding-bottom: max(24px, calc(env(safe-area-inset-bottom) + 16px)); }
   .bottom-nav { height: auto; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
-  .toast { bottom: calc(96px + env(safe-area-inset-bottom)); }
 }

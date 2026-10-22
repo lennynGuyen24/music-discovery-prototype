@@ -647,7 +647,7 @@ function DropSheet({ title, onConfirm, onClose }) {
   );
 }
 
-export function Results({ go, back, node, startNode, toast, drop, undrop }) {
+export function Results({ go, back, tab, node, startNode, toast, drop, undrop }) {
   const set = matchSet(node);
   const title = resultTitle(node);
   const [tags, setTags] = useState(set.tags);
@@ -718,7 +718,11 @@ export function Results({ go, back, node, startNode, toast, drop, undrop }) {
           <Button variant="secondary" onClick={() => setEditing(true)}>✎ Edit input</Button>
         </div>
         <div className="spacer" />
-        <Button onClick={() => { setSaved(true); toast(`Saved “${title}” to your library.`); }} disabled={saved}>
+        <Button onClick={() => {
+          setSaved(true);
+          // "View" opens the saved playlist on the Remote, already playing.
+          toast(`Saved “${title}” ✓`, { label: 'View', onClick: () => { player.load(tracks, `Playlist · ${title}`, true); tab('remote'); } });
+        }} disabled={saved}>
           {saved ? 'Saved ✓' : 'Save as playlist'}
         </Button>
         <Button variant="secondary" onClick={() => setDropping(true)} disabled={!!dropped}>
