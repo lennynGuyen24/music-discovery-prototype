@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Blob, BottomNav, Button, Chip, Glow, Icon, Knob, ListRow, Progress, SongRow, TopBar, usePreview } from './components.jsx';
 import { playPreview, PREVIEW_SECONDS } from './audio.js';
+import { detectedWords, inputLabels, matchSet, resultTitle } from './data.js';
 
 import iconCamera from './assets/icon-camera.svg';
 import iconMic from './assets/icon-mic.svg';
@@ -9,9 +10,6 @@ import iconImage from './assets/icon-image.svg';
 import glowScan1 from './assets/glow-scan-1.svg';
 import glowScan2 from './assets/glow-scan-2.svg';
 import viewfinderImg from './assets/viewfinder.svg';
-import glowResults1 from './assets/glow-results-1.svg';
-import glowResults2 from './assets/glow-results-2.svg';
-import glowResults3 from './assets/glow-results-3.svg';
 
 /* ---------- Onboarding (curated frames 01a–01c) ---------- */
 function OnboardingBackdrop() {
@@ -470,17 +468,6 @@ export function Profile({ go, tab, toast, connected, vibes }) {
 }
 
 /* ---------- 05 Node · Scanning ---------- */
-const STOP_WORDS = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'in', 'on', 'at', 'to', 'with', 'for', 'my', 'i', 'is', 'it', 'like', 'feel', 'feeling', 'some', 'someone', 'so', 'very']);
-
-export function detectTags(node) {
-  if (node?.mode === 'words') {
-    const tags = node.text.toLowerCase().split(/[^a-z0-9']+/).filter((w) => w.length > 2 && !STOP_WORDS.has(w));
-    if (tags.length) return tags.slice(0, 3).map((t) => t.toUpperCase());
-  }
-  if (node?.mode === 'mic') return ['HUSHED', 'WARM', 'LATE'];
-  return ['NEON', 'RAIN', 'NIGHT'];
-}
-
 const SCAN_MS = 4200;
 
 export function Scanning({ go, back, node }) {
@@ -488,7 +475,8 @@ export function Scanning({ go, back, node }) {
   const [level, setLevel] = useState(Array(9).fill(4));
   const [revealed, setRevealed] = useState(0);
   const [note, setNote] = useState('');
-  const tags = detectTags(node);
+  const tags = detectedWords(node);
+  const labels = inputLabels(node);
   const listening = node?.mode === 'mic';
 
   // Real camera / microphone input
@@ -538,7 +526,7 @@ export function Scanning({ go, back, node }) {
     <>
       <Glow src={glowScan1} left={-40} top={300} size={480} />
       <Glow src={glowScan2} left={120} top={380} size={240} />
-      <TopBar title={listening ? 'Listening' : 'Scanning'} onBack={back} />
+      <TopBar title={labels.bar} onBack={back} />
       <div className="content gap-16" style={{ alignItems: 'center' }}>
         <div className="spacer" />
         {node?.mode === 'words' && (
@@ -555,7 +543,7 @@ export function Scanning({ go, back, node }) {
           {(node?.mode === 'camera' || node?.mode === 'media') && <span className="scanline" />}
           <img src={viewfinderImg} alt="" />
         </div>
-        <p className="t-title" aria-live="polite">{revealed < tags.length && listening ? 'Listening…' : 'Reading the vibe…'}</p>
+        <p className="t-title" aria-live="polite">{revealed < tags.length ? labels.doing : 'Finding your sound…'}</p>
         {listening && (
           <div className="level-meter" aria-hidden="true">
             {level.map((h, i) => <span key={i} style={{ height: h }} />)}
@@ -572,20 +560,14 @@ export function Scanning({ go, back, node }) {
 }
 
 /* ---------- 06 Node · Results ---------- */
-const TRACKS = [
-  { title: 'Glass Avenue', artist: 'Mira Vale · rainy synths' },
-  { title: 'Afterglow Exit', artist: 'The Lanterns · late-night tempo' },
-  { title: 'Paper Moons', artist: 'Koi Static · new to you' },
-  { title: 'Static Hearts', artist: 'Juno Park · samples you love' },
-];
-
 export function Results({ back, node, toast, dropInMailbox, home }) {
+  const set = matchSet(node);
+  const title = resultTitle(node);
+  const tracks = set.tracks.slice(0, 4);
   const [playing, setPlaying] = useState(null);
   const [progress, setProgress] = useState(0);
   const [saved, setSaved] = useState(false);
   const stopRef = useRef(null);
-  const tags = detectTags(node);
-  const title = node?.mode === 'words' ? tags.join(' ').toLowerCase() : node?.mode === 'mic' ? 'Hushed and warm' : 'Neon after rain';
 
   useEffect(() => () => stopRef.current?.(), []);
 
@@ -601,34 +583,34 @@ export function Results({ back, node, toast, dropInMailbox, home }) {
     return () => cancelAnimationFrame(raf);
   }, [playing]);
 
-  const toggle = (i) => {
+  const toggle = (track) => {
     stopRef.current?.();
     stopRef.current = null;
-    if (playing === i) return setPlaying(null);
-    stopRef.current = playPreview(i, () => setPlaying(null));
+    if (playing === track.id) return setPlaying(null);
+    stopRef.current = playPreview(track.sound, () => setPlaying(null));
     setProgress(0);
-    setPlaying(i);
+    setPlaying(track.id);
   };
 
   const leave = (fn) => { stopRef.current?.(); fn(); };
+  const [a1, a2] = set.accents;
 
   return (
     <>
-      <Glow src={glowResults1} left={-200} top={-200} size={560} />
-      <Glow src={glowResults2} left={160} top={-120} size={420} />
-      <Glow src={glowResults3} left={180} top={40} size={160} />
+      <Blob color={a1} left={-200} top={-200} size={560} opacity={0.5} blur={160} />
+      <Blob color={a2} left={160} top={-120} size={420} opacity={0.45} blur={140} />
       <TopBar title="Your Node" onBack={() => leave(back)} />
       <div className="content gap-16">
         <p className="t-caption muted">Your vibe sounds like</p>
         <h1 className="t-display-xl full" style={{ margin: 0 }}>{title}</h1>
+        {node?.mode === 'words' && <p className="t-body muted full">“{node.text}” · {set.name}</p>}
         <div className="chip-row">
-          <Chip filled>92 BPM</Chip>
-          <Chip>Dreamy</Chip>
-          <Chip>2010s</Chip>
+          {Object.values(set.tags).map((tag, i) => <Chip key={tag} filled={i === 0}>{tag}</Chip>)}
         </div>
         <div className="tracks">
-          {TRACKS.map((t, i) => (
-            <SongRow key={t.title} {...t} playing={playing === i} progress={progress} onToggle={() => toggle(i)} />
+          {tracks.map((t) => (
+            <SongRow key={t.id} title={t.title} artist={`${t.artist} · ${t.note.toLowerCase()}`}
+              playing={playing === t.id} progress={progress} onToggle={() => toggle(t)} />
           ))}
         </div>
         <div className="spacer" />

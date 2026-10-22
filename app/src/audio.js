@@ -18,6 +18,11 @@ const TRACK_SOUNDS = [
   { bpm: 86, wave: 'sine', chords: [[52, 55, 59, 62], [48, 52, 55, 62], [45, 48, 52, 55], [47, 50, 54, 57]] },
   { bpm: 98, wave: 'triangle', chords: [[60, 64, 67, 71], [57, 60, 64, 67], [53, 57, 60, 64], [55, 59, 62, 69]] },
   { bpm: 80, wave: 'sine', chords: [[50, 53, 57, 60], [46, 50, 53, 57], [43, 46, 50, 53], [45, 49, 52, 55]] },
+  // Node result moods: moody, bright, hype, disco
+  { bpm: 72, wave: 'sine', chords: [[45, 48, 52, 55], [41, 45, 48, 52], [43, 46, 50, 53], [40, 43, 47, 50]] },
+  { bpm: 108, wave: 'triangle', chords: [[60, 64, 67, 72], [65, 69, 72, 76], [67, 71, 74, 79], [62, 65, 69, 72]] },
+  { bpm: 124, wave: 'square', chords: [[57, 60, 64, 69], [53, 57, 60, 65], [55, 59, 62, 67], [52, 55, 59, 64]] },
+  { bpm: 118, wave: 'triangle', chords: [[62, 65, 69, 72], [60, 64, 67, 71], [58, 62, 65, 69], [57, 60, 64, 67]] },
 ];
 
 /** Starts a preview. Returns a stop() function. onEnd fires when it finishes on its own. */
