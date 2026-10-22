@@ -316,7 +316,7 @@ export function Community({ toast }) {
           </div>
           <Globe selected={tuned ? station.city : null} onSelect={tuneIn} />
           <p className="t-body muted" aria-live="polite">
-            {tuned ? `Tuned in to ${station.city} · ${station.spinning}` : `${station.city} · Someone’s spinning ${station.spinning} — tune in`}
+            {tuned ? `Tuned in to ${station.city} · ${station.track.artist}` : `${station.city} · Someone’s spinning ${station.track.artist} — tune in`}
           </p>
         </section>
         <section className="card panel">
