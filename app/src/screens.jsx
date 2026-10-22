@@ -236,7 +236,7 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
         <button type="button" className="card prompt-card soon"
           onClick={() => toast('Answering prompts isn’t in this prototype yet.')}>
           <span className="card-head">
-            <span className="t-caption" style={{ color: 'var(--color-accent-magenta)' }}>Today’s prompt · Studio Crew</span>
+            <span className="t-caption" style={{ color: 'var(--color-accent-magenta-text)' }}>Today’s prompt · Studio Crew</span>
             <Soon />
           </span>
           <p className="t-body-strong">“A song for a 2AM drive with the windows down”</p>
@@ -323,7 +323,7 @@ export function Community({ toast }) {
           <div className="match">
             <span className="avatars" aria-hidden="true"><i /><i /></span>
             <span style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <span className="t-caption" style={{ color: 'var(--color-accent-magenta)' }}>94% taste match</span>
+              <span className="t-caption" style={{ color: 'var(--color-accent-magenta-text)' }}>94% taste match</span>
               <span className="t-title">You and Mira</span>
             </span>
           </div>

@@ -10,6 +10,8 @@
   --color-accent-sun: #e9f0ff;
   --color-accent-blue: #1f5cff;
   --color-accent-magenta: #c42bd6;
+  /* Magenta for small text: #c42bd6 is only 4.4:1 on ink; this is ≥4.5:1 on ink, navy and card. */
+  --color-accent-magenta-text: #d65be6;
 
   --space-4: 4px;
   --space-8: 8px;
@@ -153,7 +155,10 @@ p { margin: 0; }
 .btn:active { transform: scale(0.97); }
 .btn-primary { background: var(--color-accent-sun); color: var(--color-text-on-light); }
 .btn-secondary { border: 1.5px solid var(--color-text-primary); color: var(--color-text-primary); }
-.btn[disabled] { opacity: 0.55; cursor: default; transform: none; }
+/* Disabled must not look like a selected (sun-filled) chip: flat card fill, muted text, no glow. */
+.btn[disabled] { cursor: default; transform: none; }
+.btn-primary[disabled] { background: var(--color-surface-card); color: var(--color-text-muted); box-shadow: inset 0 0 0 1px var(--color-border-subtle); }
+.btn-secondary[disabled] { border-color: var(--color-border-subtle); color: var(--color-text-muted); }
 
 /* ---------- Top bar (component 7:50) ---------- */
 .top-bar {
@@ -181,6 +186,7 @@ p { margin: 0; }
 }
 button.chip:active { transform: scale(0.96); }
 .chip.filled { background: var(--color-accent-sun); color: var(--color-text-on-light); border-color: var(--color-accent-sun); }
+button.chip.filled:not(.tag)::before { content: '✓ '; }
 .chip.tag { background: none; border-color: var(--color-text-muted); }
 .chip.tag.filled { background: none; color: var(--color-accent-sun); border-color: var(--color-accent-sun); }
 .segmented {
@@ -291,7 +297,7 @@ button.list-row:active { transform: scale(0.98); }
   border: 1px solid var(--color-border-subtle);
 }
 .panel.navy { background: color-mix(in srgb, var(--color-bg-navy) 85%, transparent); }
-.live { display: flex; align-items: center; gap: var(--space-4); color: var(--color-accent-magenta); }
+.live { display: flex; align-items: center; gap: var(--space-4); color: var(--color-accent-magenta-text); }
 .live i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; animation: blink 1.4s ease-in-out infinite; }
 @keyframes blink { 50% { opacity: 0.3; } }
 .globe { position: relative; height: 100px; overflow: hidden; color: var(--color-border-subtle); }
