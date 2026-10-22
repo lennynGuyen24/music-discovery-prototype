@@ -211,18 +211,10 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
             {newInMailbox > 0 && <span className="badge" aria-hidden="true">{newInMailbox}</span>}
           </button>
         </div>
-        <button type="button" className="card prompt-card"
-          onClick={() => toast('Answering prompts isn’t in this prototype yet.')}>
-          <p className="t-caption" style={{ color: 'var(--color-accent-magenta)' }}>Today’s prompt · Studio Crew</p>
-          <p className="t-title">“A song for a 2AM drive with the windows down”</p>
-          <span className="answers">
-            <span className="faces" aria-hidden="true"><i /><i /><i /></span>
-            <span className="t-caption muted">6 of 9 answered · Add yours →</span>
-          </span>
-        </button>
         <div className="node-card full">
           <p className="t-caption">The Node</p>
           <p className="t-title">Feed it a place, a sound, a photo or a feeling.</p>
+          <p className="t-body node-explain">It turns what you give it into a playlist you haven’t heard yet.</p>
           <div className="node-inputs">
             {NODE_INPUTS.map((o) => (
               <button key={o.id} type="button" className="node-input" onClick={() => pick(o.id)}>
@@ -233,8 +225,17 @@ export function Home({ go, mailbox, newInMailbox, markRead, toast, startNode }) 
           </div>
           <input ref={fileRef} type="file" accept="image/*,video/*" hidden onChange={onFile} />
         </div>
+        <button type="button" className="card prompt-card"
+          onClick={() => toast('Answering prompts isn’t in this prototype yet.')}>
+          <p className="t-caption" style={{ color: 'var(--color-accent-magenta)' }}>Today’s prompt · Studio Crew</p>
+          <p className="t-body-strong">“A song for a 2AM drive with the windows down”</p>
+          <span className="answers">
+            <span className="faces" aria-hidden="true"><i /><i /><i /></span>
+            <span className="t-caption muted">6 of 9 answered · Add yours →</span>
+          </span>
+        </button>
         <div className="section-head full">
-          <p className="t-caption muted">Catalogue · Snippets</p>
+          <p className="t-caption muted">Picked for you</p>
           <button type="button" className="t-caption" onClick={() => toast('The full catalogue opens in a later version.')}>See all</button>
         </div>
         <div className="shelf">
